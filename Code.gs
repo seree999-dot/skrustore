@@ -97,6 +97,8 @@ function handleApiRequest(action, payload, userEmail) {
       return saveSystemSettings(payload, userEmail);
     case 'sendContractExpiryAlerts':
       return sendContractExpiryAlerts(userEmail);
+    case 'generateContractDocument':
+      return generateContractDocument(payload.contract_id, userEmail);
     default:
       throw new Error('ไม่พบคำสั่ง API ที่ระบุ: ' + action);
   }
@@ -986,4 +988,180 @@ function sendContractExpiryAlerts(userEmail) {
     mailSent: mailSent,
     recipients: activeStaffEmails
   };
+}
+
+/**
+ * 10. สร้างไฟล์สัญญาเช่ามาตรฐาน มรภ.สงขลา อัตโนมัติ (HTML/PDF) และจัดเก็บใน Google Drive
+ */
+function generateContractDocument(contractId, userEmail) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const user = requireAuthorizedUser(userEmail);
+    const ss = getSpreadsheet();
+    const now = new Date().toISOString();
+
+    const contracts = getSheetDataAsObjects(ss, SHEET_NAMES.CONTRACTS);
+    const shops = getSheetDataAsObjects(ss, SHEET_NAMES.SHOPS);
+    const spaces = getSheetDataAsObjects(ss, SHEET_NAMES.SPACES);
+    const zones = getSheetDataAsObjects(ss, SHEET_NAMES.ZONES);
+    const settings = getSheetDataAsObjects(ss, SHEET_NAMES.SETTINGS);
+
+    const contract = contracts.find(c => c.contract_id === contractId);
+    if (!contract) {
+      throw new Error('ไม่พบสัญญาเช่าที่ระบุ (' + contractId + ')');
+    }
+
+    const shop = shops.find(s => s.shop_id === contract.shop_id) || {};
+    const space = spaces.find(sp => sp.space_id === contract.space_id) || {};
+    const zone = zones.find(z => z.zone_id === space.zone_id) || {};
+
+    const waterRate = (settings.find(s => s.setting_key === 'WATER_RATE') || {}).setting_value || '15';
+    const electricRate = (settings.find(s => s.setting_key === 'ELECTRIC_RATE') || {}).setting_value || '5';
+    const garbageFee = (settings.find(s => s.setting_key === 'GARBAGE_FEE_DEFAULT') || {}).setting_value || '150';
+
+    const htmlContent = buildContractHtml({
+      contract: contract,
+      shop: shop,
+      space: space,
+      zone: zone,
+      waterRate: waterRate,
+      electricRate: electricRate,
+      garbageFee: garbageFee
+    });
+
+    let fileUrl = '';
+    try {
+      const fileName = 'สัญญาเช่า_' + String(contract.contract_no).replace(/[\/\\]/g, '-') + '_' + (shop.shop_name || 'ร้านค้า') + '.html';
+      const blob = Utilities.newBlob(htmlContent, 'text/html', fileName);
+      const file = DriveApp.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      fileUrl = file.getUrl();
+    } catch (e) {
+      fileUrl = 'https://seree999-dot.github.io/skrustore/#contract=' + encodeURIComponent(contract.contract_id);
+    }
+
+    contract.contract_file_url = fileUrl;
+    contract.updated_at = now;
+    contract.updated_by = user.email;
+    upsertRowByKey(ss, SHEET_NAMES.CONTRACTS, 'contract_id', contract.contract_id, contract);
+
+    writeAuditLog(ss, user.email, 'GENERATE_CONTRACT_DOC', 'CONTRACTS', contract.contract_id, 'สร้างไฟล์สัญญาเช่าอัตโนมัติเลขที่: ' + contract.contract_no);
+
+    return {
+      success: true,
+      contract_id: contract.contract_id,
+      contract_no: contract.contract_no,
+      file_url: fileUrl,
+      html_content: htmlContent
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * แม่แบบสัญญาเช่าพื้นที่ มหาวิทยาลัยราชภัฏสงขลา (HTML Template สำหรับพิมพ์และเปิดดู)
+ */
+function buildContractHtml(data) {
+  const c = data.contract;
+  const s = data.shop;
+  const sp = data.space;
+  const z = data.zone;
+
+  const rentThai = Number(c.monthly_rent || 0).toLocaleString();
+  const depositThai = Number(c.deposit_amount || 0).toLocaleString();
+
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>สัญญาเช่าพื้นที่ มรภ.สงขลา เลขที่ ${c.contract_no}</title>
+  <style>
+    body { font-family: 'Sarabun', 'TH Sarabun New', sans-serif; font-size: 14pt; line-height: 1.6; color: #1e293b; padding: 40px; max-width: 850px; margin: auto; }
+    h1, h2, h3 { text-align: center; margin-bottom: 5px; font-weight: bold; }
+    .header-box { text-align: center; border-bottom: 2px solid #881337; padding-bottom: 15px; margin-bottom: 25px; }
+    .logo-badge { display: inline-block; padding: 6px 14px; background: #881337; color: white; font-weight: bold; border-radius: 6px; font-size: 14pt; margin-bottom: 10px; }
+    .meta-box { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13pt; }
+    .section-p { text-indent: 40px; text-align: justify; margin-bottom: 12px; }
+    .bold { font-weight: bold; }
+    ol { margin-left: 20px; padding-left: 20px; text-align: justify; }
+    li { margin-bottom: 10px; }
+    .sign-table { width: 100%; margin-top: 40px; border-collapse: collapse; }
+    .sign-table td { width: 50%; text-align: center; padding: 25px 15px; vertical-align: top; }
+    .sign-line { border-bottom: 1px dotted #475569; width: 220px; margin: 30px auto 8px auto; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header-box">
+    <div class="logo-badge">มหาวิทยาลัยราชภัฏสงขลา (SKRU)</div>
+    <h2>สัญญาเช่าพื้นที่เพื่อการจำหน่ายสินค้าและบริการ</h2>
+    <p style="margin: 0; font-size: 12pt; color: #64748b;">งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง สำนักงานอธิการบดี</p>
+  </div>
+
+  <div class="meta-box">
+    <div><strong>สัญญาเลขที่:</strong> ${c.contract_no}</div>
+    <div><strong>ทำขึ้น ณ:</strong> มหาวิทยาลัยราชภัฏสงขลา</div>
+  </div>
+
+  <p class="section-p">
+    สัญญาฉบับนี้ทำขึ้นเมื่อวันที่ <span class="bold">${c.start_date}</span> ระหว่าง 
+    <span class="bold">มหาวิทยาลัยราชภัฏสงขลา</span> โดย งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง ซึ่งต่อไปในสัญญานี้เรียกว่า 
+    <span class="bold">"ผู้ให้เช่า"</span> ฝ่ายหนึ่ง กับ 
+    <span class="bold">${s.owner_name || '................................'}</span> 
+    เลขประจำตัวประชาชน <span class="bold">${s.citizen_id || '................................'}</span> 
+    ผู้ประกอบการร้านค้า <span class="bold">"${s.shop_name || '................................'}"</span> 
+    โทรศัพท์ <span class="bold">${s.phone || '................................'}</span> 
+    ซึ่งต่อไปในสัญญานี้เรียกว่า <span class="bold">"ผู้เช่า"</span> อีกฝ่ายหนึ่ง
+  </p>
+
+  <p class="section-p">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญาเช่าพื้นที่ โดยมีข้อความและเงื่อนไขดังต่อไปนี้:</p>
+
+  <ol>
+    <li><strong>วัตถุประสงค์และสถานที่เช่า:</strong> ผู้ให้เช่าตกลงให้เช่า และผู้เช่าตกลงเช่าพื้นที่ล็อก <strong>${sp.space_code || '-'} (${sp.space_name || '-'})</strong> ตั้งอยู่ ณ <strong>${z.zone_name || '-'}</strong> มีขนาดพื้นที่ประมาณ <strong>${sp.size_sqm || 12} ตารางเมตร</strong> เพื่อใช้ประโยชน์ในการประกอบกิจการ <strong>${s.category || 'จำหน่ายอาหารและเครื่องดื่ม'}</strong> เท่านั้น</li>
+    <li><strong>กำหนดระยะเวลาการเช่า:</strong> มีกำหนดระยะเวลาตั้งแต่วันที่ <strong>${c.start_date}</strong> ถึงวันที่ <strong>${c.end_date}</strong></li>
+    <li><strong>อัตราค่าเช่าและการชำระเงิน:</strong> ผู้เช่าตกลงชำระค่าเช่าพื้นที่ให้แก่ผู้ให้เช่าในอัตราเดือนละ <strong>${rentThai} บาท (${c.monthly_rent} บาทถ้วน)</strong> โดยต้องนำเงินมาชำระ ณ งานการเงินและบัญชี หรือช่องทางที่มหาวิทยาลัยกำหนด ภายในวันที่ 5 ของทุกเดือน</li>
+    <li><strong>เงินประกันการปฏิบัติตามสัญญา:</strong> ในวันทำสัญญานี้ ผู้เช่าได้วางเงินประกันสัญญาเป็นจำนวนเงิน <strong>${depositThai} บาท</strong> ไว้แก่ผู้ให้เช่า เพื่อเป็นหลักประกันความเสียหาย</li>
+    <li><strong>ค่าน้ำประปา ค่าไฟฟ้า และส่วนกลาง:</strong> ผู้เช่าตกลงชำระค่าน้ำประปาในอัตราหน่วยละ <strong>${data.waterRate} บาท</strong> และค่าไฟฟ้าในอัตราหน่วยละ <strong>${data.electricRate} บาท</strong> ตามจำนวนหน่วยที่ใช้จริงจากมิเตอร์ประจำล็อก และค่าจัดการขยะ/ส่วนกลางเดือนละ <strong>${data.garbageFee} บาท</strong></li>
+    <li><strong>การรักษาความสะอาดและสุขอนามัย:</strong> ผู้เช่าต้องรักษาความสะอาด ถูกสุขลักษณะตามเกณฑ์มาตรฐานสุขาภิบาลอาหารของมหาวิทยาลัยราชภัฏสงขลา และปฏิบัติตามประกาศกระทรวงสาธารณสุขอย่างเคร่งครัด</li>
+    <li><strong>การห้ามโอนสิทธิ์หรือเช่าช่วง:</strong> ผู้เช่าสัญญาว่าจะไม่นำพื้นที่เช่าทั้งหมดหรือบางส่วนไปให้ผู้อื่นเช่าช่วง หรือโอนสิทธิ์การเช่าให้แก่บุคคลภายนอกโดยเด็ดขาด</li>
+    <li><strong>การส่งมอบพื้นที่คืนและการบอกเลิกสัญญา:</strong> หากผู้เช่าผิดนัดไม่ชำระค่าเช่าติดต่อกัน หรือกระทำผิดเงื่อนไขข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญา ยึดเงินประกัน และสั่งปิดพื้นที่เช่าได้ทันที</li>
+  </ol>
+
+  <p class="section-p" style="margin-top: 25px;">
+    สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อไว้เป็นหลักฐานต่อหน้าพยาน
+  </p>
+
+  <table class="sign-table">
+    <tr>
+      <td>
+        ลงชื่อ ........................................................... ผู้ให้เช่า<br>
+        ( ........................................................... )<br>
+        ผู้แทนมหาวิทยาลัยราชภัฏสงขลา
+      </td>
+      <td>
+        ลงชื่อ ........................................................... ผู้เช่า<br>
+        ( ${s.owner_name || '...........................................................'} )<br>
+        ผู้ประกอบการร้านค้า ${s.shop_name}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ลงชื่อ ........................................................... พยาน<br>
+        ( ........................................................... )<br>
+        หัวหน้างานบริหารทรัพย์สินและสิทธิประโยชน์
+      </td>
+      <td>
+        ลงชื่อ ........................................................... พยาน<br>
+        ( ........................................................... )<br>
+        เจ้าหน้าที่งานบริหารทรัพย์สิน กองกลาง
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }

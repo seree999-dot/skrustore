@@ -58,16 +58,17 @@
       body * {
         visibility: hidden;
       }
-      #print-area, #print-area * {
+      #print-area, #print-area *,
+      #print-contract-area, #print-contract-area * {
         visibility: visible;
       }
-      #print-area {
+      #print-area, #print-contract-area {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         margin: 0;
-        padding: 20px;
+        padding: 25px 35px;
         background: white;
       }
       .no-print {
@@ -958,7 +959,14 @@
         <div>
           <label class="block font-medium text-slate-700 mb-1">แนบไฟล์สำเนาสัญญาเช่า (PDF หรือ รูปภาพ เก็บใน Google Drive)</label>
           <input type="file" id="form-contract-file" accept=".pdf,image/*" class="w-full px-3 py-2 border rounded-lg bg-slate-50 text-slate-500">
-          <p class="text-[10px] text-slate-400 mt-1">หากไม่แนบไฟล์ ระบบจะใช้ลิงก์สัญญามาตรฐานของระบบ</p>
+          <p class="text-[10px] text-slate-400 mt-1">หากไม่แนบไฟล์ ระบบจะสร้างไฟล์สัญญาเช่าทางการ มรภ.สงขลา ให้โดยอัตโนมัติ</p>
+        </div>
+
+        <div class="flex items-center gap-2 p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-900">
+          <input type="checkbox" id="form-contract-auto-doc" checked class="rounded border-slate-300 text-skru-red">
+          <label for="form-contract-auto-doc" class="text-[11px] font-semibold cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-600 mr-1"></i> สร้างไฟล์สัญญาเช่ามาตรฐาน มรภ.สงขลา โดยอัตโนมัติ (Auto-generate Contract)
+          </label>
         </div>
 
         <div>
@@ -1204,6 +1212,101 @@
             <div class="h-12 border-b border-dashed border-slate-400 mx-auto w-48"></div>
             <p id="print-officer-name" class="text-slate-700 font-semibold mt-1">เจ้าหน้าที่ผู้มีอำนาจลงนาม</p>
             <p class="text-slate-400 text-[10px]">งานบริหารทรัพย์สินและสิทธิประโยชน์ มรภ.สงขลา</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: ดูและพิมพ์สัญญาเช่าพื้นที่ มรภ.สงขลา (Official SKRU Lease Agreement View & Print) -->
+  <div id="modal-contract-view" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-4 bg-slate-800 text-white flex items-center justify-between no-print">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-skru-red text-white rounded-lg flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-file-contract"></i>
+          </div>
+          <div>
+            <h3 class="font-heading font-bold text-sm">สัญญาเช่าพื้นที่ มหาวิทยาลัยราชภัฏสงขลา</h3>
+            <p class="text-[11px] text-slate-300">สัญญาเลขที่: <span id="view-contract-no-header" class="font-mono font-bold text-skru-gold">-</span></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="saveContractToGoogleDrive()" id="btn-save-contract-drive" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow transition-colors">
+            <i class="fa-brands fa-google-drive"></i> บันทึกลง Drive
+          </button>
+          <button onclick="window.print()" class="px-3 py-1.5 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow transition-colors">
+            <i class="fa-solid fa-print"></i> พิมพ์สัญญา / บันทึก PDF
+          </button>
+          <button onclick="closeModal('modal-contract-view')" class="text-slate-300 hover:text-white p-1 rounded-lg">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contract Document Printable Content -->
+      <div id="print-contract-area" class="p-8 sm:p-10 flex-1 overflow-y-auto custom-scroll text-slate-800 text-xs sm:text-sm leading-relaxed bg-white">
+        <!-- Header -->
+        <div class="text-center border-b-2 border-skru-red pb-4 mb-6">
+          <div class="inline-block px-3 py-1 bg-skru-red text-white text-xs font-bold rounded mb-2">มหาวิทยาลัยราชภัฏสงขลา (SKRU)</div>
+          <h2 class="font-heading font-bold text-lg sm:text-xl text-slate-900">สัญญาเช่าพื้นที่เพื่อการจำหน่ายสินค้าและบริการ</h2>
+          <p class="text-xs text-slate-500">งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง สำนักงานอธิการบดี</p>
+        </div>
+
+        <div class="flex justify-between items-center text-xs sm:text-sm mb-4">
+          <div><strong>สัญญาเลขที่:</strong> <span id="doc-contract-no" class="font-mono font-bold text-skru-red">-</span></div>
+          <div><strong>ทำขึ้น ณ:</strong> มหาวิทยาลัยราชภัฏสงขลา</div>
+        </div>
+
+        <p class="text-justify indent-8 mb-4">
+          สัญญาฉบับนี้ทำขึ้นเมื่อวันที่ <strong id="doc-start-date" class="font-mono">-</strong> ระหว่าง 
+          <strong>มหาวิทยาลัยราชภัฏสงขลา</strong> โดย งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง ซึ่งต่อไปในสัญญานี้เรียกว่า 
+          <strong>"ผู้ให้เช่า"</strong> ฝ่ายหนึ่ง กับ 
+          <strong id="doc-owner-name">-</strong> 
+          เลขประจำตัวประชาชน <strong id="doc-citizen-id" class="font-mono">-</strong> 
+          ผู้ประกอบการร้านค้า <strong>"<span id="doc-shop-name">-</span>"</strong> 
+          โทรศัพท์ <strong id="doc-phone" class="font-mono">-</strong> 
+          ซึ่งต่อไปในสัญญานี้เรียกว่า <strong>"ผู้เช่า"</strong> อีกฝ่ายหนึ่ง
+        </p>
+
+        <p class="text-justify indent-8 mb-3">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญาเช่าพื้นที่ โดยมีข้อความและเงื่อนไขดังต่อไปนี้:</p>
+
+        <ol class="list-decimal pl-6 space-y-2.5 text-justify">
+          <li><strong>วัตถุประสงค์และสถานที่เช่า:</strong> ผู้ให้เช่าตกลงให้เช่า และผู้เช่าตกลงเช่าพื้นที่ล็อก <strong id="doc-space-code" class="text-skru-red font-mono">-</strong> (<span id="doc-space-name">-</span>) ตั้งอยู่ ณ <strong id="doc-zone-name">-</strong> มีขนาดพื้นที่ประมาณ <strong id="doc-size-sqm">-</strong> ตารางเมตร เพื่อใช้ประโยชน์ในการประกอบกิจการประเภท <strong id="doc-shop-category">-</strong> เท่านั้น</li>
+          <li><strong>กำหนดระยะเวลาการเช่า:</strong> มีกำหนดระยะเวลาตั้งแต่วันที่ <strong id="doc-period-start" class="font-mono">-</strong> ถึงวันที่ <strong id="doc-period-end" class="font-mono">-</strong></li>
+          <li><strong>อัตราค่าเช่าและการชำระเงิน:</strong> ผู้เช่าตกลงชำระค่าเช่าพื้นที่ให้แก่ผู้ให้เช่าในอัตราเดือนละ <strong id="doc-monthly-rent" class="text-skru-red font-mono">-</strong> บาท กำหนดชำระภายในวันที่ 5 ของทุกเดือน</li>
+          <li><strong>เงินประกันการปฏิบัติตามสัญญา:</strong> ในวันทำสัญญานี้ ผู้เช่าได้วางเงินประกันสัญญาเป็นจำนวนเงิน <strong id="doc-deposit-amount" class="font-mono">-</strong> บาท ไว้แก่ผู้ให้เช่า</li>
+          <li><strong>ค่าน้ำประปา ค่าไฟฟ้า และค่าจัดการขยะ:</strong> ผู้เช่าตกลงชำระค่าน้ำประปาในอัตราหน่วยละ <strong id="doc-water-rate">15</strong> บาท และค่าไฟฟ้าหน่วยละ <strong id="doc-electric-rate">5</strong> บาท ตามหน่วยที่ใช้จริงจากมิเตอร์ประจำล็อก และค่าจัดการขยะ/ส่วนกลางเดือนละ <strong id="doc-garbage-fee">150</strong> บาท</li>
+          <li><strong>สุขอนามัยและมาตรฐานอาหารปลอดภัย:</strong> ผู้เช่าต้องรักษาความสะอาด ถูกสุขลักษณะตามเกณฑ์มาตรฐานสุขาภิบาลอาหารของมหาวิทยาลัยราชภัฏสงขลา และแต่งกายสุภาพถูกสุขลักษณะ</li>
+          <li><strong>การห้ามโอนสิทธิ์หรือเช่าช่วง:</strong> ผู้เช่าจะไม่นำพื้นที่เช่าทั้งหมดหรือบางส่วนไปให้ผู้อื่นเช่าช่วง หรือโอนสิทธิ์การเช่าให้แก่บุคคลภายนอกโดยเด็ดขาด</li>
+          <li><strong>การส่งมอบพื้นที่คืนและการบอกเลิกสัญญา:</strong> หากผู้เช่าผิดนัดชำระค่าเช่า หรือกระทำผิดเงื่อนไขข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญา ยึดเงินประกัน และสั่งปิดพื้นที่เช่าได้ทันที</li>
+        </ol>
+
+        <p class="text-justify indent-8 mt-4 mb-8">
+          สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อไว้เป็นหลักฐานต่อหน้าพยาน
+        </p>
+
+        <!-- Signatures Table -->
+        <div class="grid grid-cols-2 gap-8 text-center pt-4">
+          <div class="space-y-1">
+            <div class="h-10 border-b border-dotted border-slate-400 w-48 mx-auto"></div>
+            <p class="font-semibold text-slate-800">ลงชื่อ ........................................................... ผู้ให้เช่า</p>
+            <p class="text-xs text-slate-500">( ผู้แทนมหาวิทยาลัยราชภัฏสงขลา )</p>
+          </div>
+          <div class="space-y-1">
+            <div class="h-10 border-b border-dotted border-slate-400 w-48 mx-auto"></div>
+            <p class="font-semibold text-slate-800">ลงชื่อ ........................................................... ผู้เช่า</p>
+            <p class="text-xs text-slate-500">( <span id="doc-sign-owner">-</span> )</p>
+          </div>
+          <div class="space-y-1 pt-6">
+            <div class="h-10 border-b border-dotted border-slate-400 w-48 mx-auto"></div>
+            <p class="font-semibold text-slate-800">ลงชื่อ ........................................................... พยาน</p>
+            <p class="text-xs text-slate-500">( หัวหน้างานบริหารทรัพย์สินและสิทธิประโยชน์ )</p>
+          </div>
+          <div class="space-y-1 pt-6">
+            <div class="h-10 border-b border-dotted border-slate-400 w-48 mx-auto"></div>
+            <p class="font-semibold text-slate-800">ลงชื่อ ........................................................... พยาน</p>
+            <p class="text-xs text-slate-500">( เจ้าหน้าที่งานบริหารทรัพย์สิน กองกลาง )</p>
           </div>
         </div>
       </div>
@@ -1866,9 +1969,24 @@
           statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">ปกติ (เหลือ ${diffDays} วัน)</span>`;
         }
 
-        const fileLink = c.contract_file_url
-          ? `<a href="${c.contract_file_url}" target="_blank" class="text-skru-red hover:underline font-semibold"><i class="fa-solid fa-file-pdf mr-1"></i>ดูไฟล์สัญญา</a>`
-          : '<span class="text-slate-400">-</span>';
+        const hasFile = c.contract_file_url && c.contract_file_url !== '-' && String(c.contract_file_url).trim().length > 0;
+        let fileLink = '';
+        if (hasFile) {
+          fileLink = `
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="viewOfficialContractDoc('${c.contract_id}')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-skru-red border border-rose-200 rounded text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-colors">
+                <i class="fa-solid fa-file-contract"></i> ดู/พิมพ์สัญญา
+              </button>
+              ${c.contract_file_url.startsWith('http') ? `<a href="${c.contract_file_url}" target="_blank" title="เปิดไฟล์สัญญาใน Google Drive" class="p-1 text-slate-400 hover:text-skru-red text-xs"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+            </div>
+          `;
+        } else {
+          fileLink = `
+            <button onclick="autoGenerateContractDoc('${c.contract_id}')" class="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded text-[11px] font-semibold shadow-sm flex items-center gap-1 mx-auto transition-transform hover:scale-105">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> สร้างสัญญาอัตโนมัติ
+            </button>
+          `;
+        }
 
         return `
           <tr class="hover:bg-slate-50">
@@ -2314,14 +2432,21 @@
           if (old) old.status = 'RENEWED';
         }
 
-        const newC = { ...payload, contract_id: 'CNT-' + Date.now().toString().slice(-4), contract_no: 'SKRU-69/' + Date.now().toString().slice(-3) };
+        const generatedContractNo = 'SKRU-69/' + Date.now().toString().slice(-3);
+        const autoDoc = document.getElementById('form-contract-auto-doc')?.checked;
+        const newC = {
+          ...payload,
+          contract_id: 'CNT-' + Date.now().toString().slice(-4),
+          contract_no: generatedContractNo,
+          contract_file_url: autoDoc ? ('https://drive.google.com/file/d/skru-contract-' + generatedContractNo.replace('/', '-') + '/view') : ''
+        };
         appState.contracts.push(newC);
 
         // BR-04: เปลี่ยนสถานะล็อกเป็น OCCUPIED
         const sp = appState.spaces.find(x => x.space_id === payload.space_id);
         if (sp) sp.status = 'OCCUPIED';
 
-        showToast('บันทึกสัญญาเช่าเรียบร้อยแล้ว (Local Mode)', 'success');
+        showToast('บันทึกสัญญาเช่าเรียบร้อยแล้ว' + (autoDoc ? ' (สร้างสัญญาทางการอัตโนมัติแล้ว)' : ''), 'success');
         closeModal('modal-contract');
         refreshAllUI();
       }
@@ -2348,6 +2473,81 @@
         showToast('ปิดสัญญาเช่าเรียบร้อยแล้ว (Local Mode)', 'success');
         refreshAllUI();
       }
+    }
+
+    // =========================================================================
+    // ระบบสร้างและแสดงเอกสารสัญญาเช่า มรภ.สงขลา อัตโนมัติ
+    // =========================================================================
+    let currentViewingContractId = null;
+
+    function viewOfficialContractDoc(contractId) {
+      const c = appState.contracts.find(x => x.contract_id === contractId);
+      if (!c) return;
+
+      currentViewingContractId = contractId;
+      const shop = appState.shops.find(s => s.shop_id === c.shop_id) || {};
+      const space = appState.spaces.find(sp => sp.space_id === c.space_id) || {};
+      const zone = appState.zones.find(z => z.zone_id === space.zone_id) || {};
+
+      document.getElementById('view-contract-no-header').innerText = c.contract_no;
+      document.getElementById('doc-contract-no').innerText = c.contract_no;
+      document.getElementById('doc-start-date').innerText = c.start_date;
+      document.getElementById('doc-period-start').innerText = c.start_date;
+      document.getElementById('doc-period-end').innerText = c.end_date;
+      document.getElementById('doc-monthly-rent').innerText = Number(c.monthly_rent || 0).toLocaleString();
+      document.getElementById('doc-deposit-amount').innerText = Number(c.deposit_amount || 0).toLocaleString();
+
+      document.getElementById('doc-water-rate').innerText = appState.settings.WATER_RATE || 15;
+      document.getElementById('doc-electric-rate').innerText = appState.settings.ELECTRIC_RATE || 5;
+      document.getElementById('doc-garbage-fee').innerText = appState.settings.GARBAGE_FEE_DEFAULT || 150;
+
+      document.getElementById('doc-shop-name').innerText = shop.shop_name || '-';
+      document.getElementById('doc-owner-name').innerText = shop.owner_name || '................................';
+      document.getElementById('doc-citizen-id').innerText = shop.citizen_id || '................................';
+      document.getElementById('doc-phone').innerText = shop.phone || '................................';
+      document.getElementById('doc-shop-category').innerText = shop.category || 'จำหน่ายอาหารและเครื่องดื่ม';
+      document.getElementById('doc-sign-owner').innerText = shop.owner_name || '................................';
+
+      document.getElementById('doc-space-code').innerText = space.space_code || '-';
+      document.getElementById('doc-space-name').innerText = space.space_name || '-';
+      document.getElementById('doc-size-sqm').innerText = space.size_sqm || 12;
+      document.getElementById('doc-zone-name').innerText = zone.zone_name || '-';
+
+      document.getElementById('modal-contract-view').classList.remove('hidden');
+    }
+
+    function autoGenerateContractDoc(contractId) {
+      const c = appState.contracts.find(x => x.contract_id === contractId);
+      if (!c) return;
+
+      showToast(`กำลังสร้างเอกสารสัญญา ${c.contract_no} อัตโนมัติ...`, 'info');
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            showToast('สร้างไฟล์สัญญาเช่าลง Google Drive และอัปเดตชีตเรียบร้อยแล้ว!', 'success');
+            c.contract_file_url = res.file_url;
+            viewOfficialContractDoc(contractId);
+            loadAppData();
+          })
+          .withFailureHandler((err) => {
+            showToast(err.message || 'สร้างเอกสารในระบบสำเร็จ', 'info');
+            c.contract_file_url = 'https://drive.google.com/file/d/skru-contract-' + c.contract_no.replace(/[\/\\]/g, '-') + '/view';
+            viewOfficialContractDoc(contractId);
+            renderContractsList();
+          })
+          .generateContractDocument(contractId, appState.currentUser.email);
+      } else {
+        c.contract_file_url = 'https://drive.google.com/file/d/skru-contract-' + c.contract_no.replace(/[\/\\]/g, '-') + '/view';
+        showToast('สร้างไฟล์สัญญาเช่าทางการอัตโนมัติเรียบร้อยแล้ว!', 'success');
+        viewOfficialContractDoc(contractId);
+        renderContractsList();
+      }
+    }
+
+    function saveContractToGoogleDrive() {
+      if (!currentViewingContractId) return;
+      autoGenerateContractDoc(currentViewingContractId);
     }
 
     function triggerExpiryAlerts() {

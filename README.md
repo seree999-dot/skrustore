@@ -92,28 +92,30 @@
 
 ---
 
-## 💻 วิธีการติดตั้งและใช้งาน
+## 💻 วิธีการเปิดใช้งานระบบให้บันทึกลง Google Sheet และ Google Drive ทันที
 
-### วิธีที่ 1: ติดตั้งบน Google Apps Script (ใช้งานจริง)
-1. เปิด Google Sheets: [1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA](https://docs.google.com/spreadsheets/d/1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA/edit)
+ระบบรองรับการเชื่อมต่อแบบ **Real-time 2 ทาง**: บันทึกข้อมูลและสร้างไฟล์สัญญาเช่าลง Google Drive และ Google Sheets ได้ทันที
+
+### ขั้นตอนการเชื่อมต่อ (ทำเพียงครั้งเดียว):
+1. **เปิด Google Sheets:** [1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA](https://docs.google.com/spreadsheets/d/1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA/edit)
 2. ไปที่เมนู **ส่วนขยาย (Extensions)** $\rightarrow$ **Apps Script**
-3. คัดลอกโค้ดจากไฟล์ `Code.gs` ไปวางแทนที่ในไฟล์โค้ด
-4. สร้างไฟล์ HTML ชื่อ `index.html` แล้วนำโค้ดจากไฟล์ `index.html` ไปวาง
-5. กด **ทำให้ใช้งานได้ (Deploy)** $\rightarrow$ **การทำให้ใช้งานได้ใหม่ (New deployment)**
+3. นำโค้ดจากไฟล์ [`Code.gs`](file:///d:/Dep/google%20script/%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A%E0%B8%A3%E0%B8%B4%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B9%89%E0%B8%B2/Code.gs) ไปวางในโปรเจกต์ Apps Script แล้วกด **บันทึก (Save)**
+4. กดปุ่มสีน้ำเงิน **ทำให้ใช้งานได้ (Deploy)** $\rightarrow$ **การทำให้ใช้งานได้ใหม่ (New deployment)**
    - เลือกประเภท: **เว็บแอป (Web app)**
-   - กำหนดสิทธิ์การเข้าถึง (Who has access): ตามต้องการ (เช่น Anyone with Google account หรือ Anyone)
-6. เปิดลิงก์ Web App URL เพื่อเริ่มใช้งานระบบได้ทันที
+   - คำอธิบาย: `SKRU Store Backend Live Sync`
+   - ปฏิบัติการในฐานะ (Execute as): **ฉัน (Me)**
+   - ผู้ที่มีสิทธิ์เข้าถึง (Who has access): **ทุกคน (Anyone)** *(สำคัญ เพื่อให้หน้าเว็บส่งคำสั่งบันทึกได้)*
+5. กด **Deploy** และ **คัดลอก Web App URL** (ตัวอย่าง: `https://script.google.com/macros/s/AKfycb.../exec`)
+6. เปิดหน้าเว็บระบบบน GitHub Pages: [https://seree999-dot.github.io/skrustore/](https://seree999-dot.github.io/skrustore/)
+7. คลิกปุ่ม **"เชื่อมต่อ Google Sheet & Drive ทันที"** บนแถบด้านบนขวา
+8. วาง **Web App URL** ลงในช่อง แล้วกดปุ่ม **"สร้างตารางข้อมูลใน Google Sheet"** (ระบบจะสร้างชีต 8 ตารางพร้อมข้อมูลเริ่มต้นให้อัตโนมัติทันที) จากนั้นกด **"บันทึกการเชื่อมต่อ"**
+9. 🎉 **เสร็จสมบูรณ์!** ข้อมูลร้านค้า ล็อกพื้นที่ บิลค่าเช่า และการสร้างไฟล์สัญญาเช่าจะถูกบันทึกสดลง Google Sheet และ Google Drive ของท่านทันทีทุกครั้งที่มีการกดบันทึกในระบบ!
 
-### วิธีที่ 2: ทดสอบผ่าน Browser / GitHub Pages ทันที
-- สามารถดับเบิลคลิกเปิดไฟล์ `index.html` บนเบราว์เซอร์ (Google Chrome / Edge) เพื่อทดสอบฟังก์ชันทั้งหมดได้ทันที โดยระบบมีกลไก In-Memory Mock Database จำลองให้ทดสอบได้ครบทุกฟังก์ชันก่อน Deploy
+---
 
-### วิธีที่ 3: นำโค้ดขึ้น GitHub Repository
-ดับเบิลคลิกไฟล์ `push-to-github.bat` หรือเปิด Terminal แล้วสั่ง:
-```bash
-git init
-git branch -M main
-git remote add origin https://github.com/seree999-dot/skrustore.git
-git add .
-git commit -m "feat: ระบบบริหารจัดการร้านค้า มรภ.สงขลา พร้อม Google Login Mockup และ Google Sheets Backend"
-git push -u origin main
-```
+## 📄 การสร้างเอกสารสัญญาเช่าอัตโนมัติ (Auto-generate Contract)
+- เมื่อกดทำสัญญาหรือกดไอคอน **"สร้างไฟล์สัญญาทางการ"** ในแท็บสัญญาเช่า
+- ระบบจะดึงข้อมูลร้านค้า ล็อกพื้นที่ อัตราค่าเช่า เงินประกัน และข้อกำหนดมหาวิทยาลัยราชภัฏสงขลา
+- สร้างเอกสารสัญญาฉบับสมบูรณ์ (พร้อมตราสัญลักษณ์ มรภ.สงขลา และจุดลงลายมือชื่อ)
+- **อัปโหลดจัดเก็บใน Google Drive อัตโนมัติ** และนำลิงก์ไฟล์ (Drive URL) มาบันทึกลงในแถวสัญญาใน Google Sheet ให้ทันที
+- ผู้ใช้งานสามารถเปิดดูไฟล์ หรือคลิกพิมพ์ในขนาดกระดาษ A4 ได้ทันที

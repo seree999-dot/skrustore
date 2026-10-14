@@ -7,6 +7,7 @@
 
 ## 📌 ข้อมูลการเชื่อมต่อระบบ
 
+- **เว็บแอปพลิเคชันออนไลน์ (Live Demo / GitHub Pages):** [https://seree999-dot.github.io/skrustore/](https://seree999-dot.github.io/skrustore/)
 - **Google Sheet ID (ฐานข้อมูล):** `1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA`  
   [เปิดดู Google Sheets โดยตรง](https://docs.google.com/spreadsheets/d/1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA/edit)
 - **GitHub Repository:** [https://github.com/seree999-dot/skrustore.git](https://github.com/seree999-dot/skrustore.git)

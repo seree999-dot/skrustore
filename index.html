@@ -1,0 +1,2711 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารจัดการร้านค้า มหาวิทยาลัยราชภัฏสงขลา (SKRU Store Management)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Sarabun & Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'sans-serif'],
+            heading: ['Prompt', 'sans-serif'],
+          },
+          colors: {
+            skru: {
+              red: '#881337',      // เลือดหมู/แดงเข้ม มรภ.สงขลา
+              redLight: '#9f1239',
+              redDark: '#4c0519',
+              gold: '#ca8a04',     // สีทอง/เหลือง
+              goldLight: '#eab308',
+              goldBg: '#fef9c3',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+    h1, h2, h3, h4, h5, h6, .font-heading {
+      font-family: 'Prompt', sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- 1. Google Login Mockup Screen (แสดงเมื่อยังไม่ได้เข้าสู่ระบบ) -->
+  <!-- ========================================================================= -->
+  <div id="login-container" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+      <!-- Header Banner มรภ.สงขลา -->
+      <div class="bg-gradient-to-r from-skru-red to-rose-900 p-8 text-center text-white relative">
+        <div class="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-skru-gold">
+          <i class="fa-solid fa-store text-3xl text-skru-red"></i>
+        </div>
+        <div class="inline-block px-3 py-1 bg-skru-gold/20 text-yellow-300 text-xs font-semibold rounded-full border border-yellow-400/30 mb-2">
+          มหาวิทยาลัยราชภัฏสงขลา (SKRU)
+        </div>
+        <h1 class="text-2xl font-bold font-heading">ระบบบริหารจัดการร้านค้า</h1>
+        <p class="text-xs text-rose-200 mt-1">งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง</p>
+      </div>
+
+      <!-- Login Body -->
+      <div class="p-8">
+        <div class="text-center mb-6">
+          <p class="text-sm text-slate-600">เข้าสู่ระบบสำหรับเจ้าหน้าที่และผู้ดูแลระบบภายใน</p>
+          <p class="text-xs text-slate-400 mt-1">เชื่อมต่อฐานข้อมูล Google Sheets ID: <span class="font-mono text-slate-500">1Fcb...alCrA</span></p>
+        </div>
+
+        <!-- Google Login Mockup Button -->
+        <button onclick="openGoogleLoginModal()" class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-sm hover:shadow transition-all duration-150 font-medium text-slate-700 text-sm group">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span class="font-heading">เข้าสู่ระบบด้วยบัญชี Google</span>
+          <i class="fa-solid fa-arrow-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+
+        <div class="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+          <span><i class="fa-solid fa-shield-halved text-emerald-500 mr-1"></i> Google Identity / Allowlist</span>
+          <span>Version 1.0.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. Google Login Mockup Modal (Dialog สำหรับเลือกหรือกรอกบัญชี Google) -->
+  <!-- ========================================================================= -->
+  <div id="google-login-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all animate-fade-in">
+      <!-- Google Modal Header -->
+      <div class="p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <div>
+            <h3 class="font-heading font-semibold text-slate-800 text-sm">ลงชื่อเข้าใช้ด้วย Google</h3>
+            <p class="text-xs text-slate-500">ไปยัง: ระบบบริหารจัดการร้านค้า มรภ.สงขลา</p>
+          </div>
+        </div>
+        <button onclick="closeGoogleLoginModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Google Modal Body -->
+      <div class="p-6">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">เลือกบัญชีจำลองสำหรับการทดสอบ (Mockup Accounts)</p>
+
+        <div class="space-y-2 mb-6">
+          <!-- Account 1: Admin -->
+          <div onclick="selectMockAccount('admin.property@skru.ac.th')" class="p-3 border border-slate-200 rounded-xl hover:border-skru-red hover:bg-rose-50/50 cursor-pointer transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-skru-red text-white flex items-center justify-center font-bold text-sm shadow">
+                ส
+              </div>
+              <div class="text-left">
+                <div class="font-semibold text-xs text-slate-800 group-hover:text-skru-red">คุณสมศักดิ์ ดูแลทรัพย์สิน</div>
+                <div class="text-xs text-slate-500 font-mono">admin.property@skru.ac.th</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-bold rounded-full">ADMIN</span>
+          </div>
+
+          <!-- Account 2: Staff Central -->
+          <div onclick="selectMockAccount('staff.central@skru.ac.th')" class="p-3 border border-slate-200 rounded-xl hover:border-teal-500 hover:bg-teal-50/50 cursor-pointer transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center font-bold text-sm shadow">
+                ว
+              </div>
+              <div class="text-left">
+                <div class="font-semibold text-xs text-slate-800 group-hover:text-teal-700">คุณวิภาวรรณ กองกลาง</div>
+                <div class="text-xs text-slate-500 font-mono">staff.central@skru.ac.th</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full">STAFF</span>
+          </div>
+
+          <!-- Account 3: Utility Officer -->
+          <div onclick="selectMockAccount('utility.officer@skru.ac.th')" class="p-3 border border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-blue-700 text-white flex items-center justify-center font-bold text-sm shadow">
+                ณ
+              </div>
+              <div class="text-left">
+                <div class="font-semibold text-xs text-slate-800 group-hover:text-blue-700">คุณณัฐพล จดมิเตอร์</div>
+                <div class="text-xs text-slate-500 font-mono">utility.officer@skru.ac.th</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">STAFF</span>
+          </div>
+
+          <!-- Account 4: Unauthorized User (สำหรับทดสอบ AC-01.2) -->
+          <div onclick="selectMockAccount('unauthorized.guest@gmail.com')" class="p-3 border border-dashed border-amber-300 rounded-xl hover:border-amber-500 hover:bg-amber-50/50 cursor-pointer transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow">
+                ?
+              </div>
+              <div class="text-left">
+                <div class="font-semibold text-xs text-slate-800 group-hover:text-amber-800">ผู้ใช้ภายนอก (ทดสอบสิทธิ์)</div>
+                <div class="text-xs text-slate-500 font-mono">unauthorized.guest@gmail.com</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full">NO PERMIT</span>
+          </div>
+        </div>
+
+        <!-- Custom Email Input -->
+        <div class="pt-4 border-t border-slate-100">
+          <label class="block text-xs font-medium text-slate-600 mb-1">หรือระบุอีเมล Google อื่นๆ ที่อยู่ในระบบ Allowlist:</label>
+          <div class="flex gap-2">
+            <input type="email" id="custom-email-input" placeholder="example@skru.ac.th" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-skru-red focus:border-skru-red outline-none">
+            <button onclick="handleCustomEmailLogin()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg transition-colors">
+              เข้าใช้งาน
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. Main Application Layout (แสดงเมื่อเข้าสู่ระบบแล้ว) -->
+  <!-- ========================================================================= -->
+  <div id="app-container" class="hidden min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-gradient-to-r from-skru-red to-rose-950 text-white shadow-md sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo & Brand -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-md border border-skru-gold">
+              <i class="fa-solid fa-store text-xl text-skru-red"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="font-heading font-bold text-base tracking-wide">ระบบบริหารจัดการร้านค้า</h1>
+                <span class="bg-skru-gold text-slate-900 text-[10px] font-bold px-1.5 py-0.5 rounded">มรภ.สงขลา</span>
+              </div>
+              <p class="text-[11px] text-rose-200">งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง</p>
+            </div>
+          </div>
+
+          <!-- Active User Profile & Actions -->
+          <div class="flex items-center gap-3">
+            <div class="hidden md:flex flex-col text-right">
+              <span id="header-user-name" class="font-semibold text-xs text-white">...</span>
+              <div class="flex items-center justify-end gap-1.5">
+                <span id="header-user-role" class="px-1.5 py-0.2 bg-rose-800 text-[10px] text-rose-200 font-bold rounded">...</span>
+                <span id="header-user-email" class="text-[11px] text-rose-200 font-mono">...</span>
+              </div>
+            </div>
+
+            <!-- User Avatar & Switch Menu -->
+            <div class="flex items-center gap-2">
+              <div id="header-user-avatar" class="w-9 h-9 rounded-full bg-white text-skru-red flex items-center justify-center font-bold text-sm shadow border border-rose-300">
+                U
+              </div>
+              <button onclick="openGoogleLoginModal()" title="สลับบัญชี Google" class="p-2 hover:bg-white/10 rounded-lg text-rose-200 hover:text-white transition-colors text-xs flex items-center gap-1 border border-white/10">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span class="hidden sm:inline">สลับบัญชี</span>
+              </button>
+              <button onclick="handleLogout()" title="ออกจากระบบ" class="p-2 hover:bg-rose-800/80 rounded-lg text-rose-200 hover:text-white transition-colors text-xs">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="bg-rose-950/70 border-t border-rose-900/60 px-4 sm:px-6 lg:px-8 overflow-x-auto custom-scroll">
+        <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-2 py-1">
+          <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-chart-pie"></i> แดชบอร์ดภาพรวม
+          </button>
+          <button onclick="switchTab('spaces')" id="tab-btn-spaces" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-map-location-dot"></i> โซนและล็อกพื้นที่
+          </button>
+          <button onclick="switchTab('shops')" id="tab-btn-shops" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-shop"></i> ทะเบียนร้านค้า
+          </button>
+          <button onclick="switchTab('contracts')" id="tab-btn-contracts" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors relative">
+            <i class="fa-solid fa-file-signature"></i> สัญญาเช่า & แจ้งเตือน
+            <span id="badge-contract-alert" class="hidden px-1.5 py-0.2 bg-amber-500 text-slate-900 text-[10px] font-bold rounded-full">0</span>
+          </button>
+          <button onclick="switchTab('billings')" id="tab-btn-billings" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-file-invoice-dollar"></i> ค่าเช่า & มิเตอร์น้ำ-ไฟ
+          </button>
+          <button onclick="switchTab('users')" id="tab-btn-users" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-users-gear"></i> ผู้ใช้งาน & สิทธิ์
+          </button>
+          <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors">
+            <i class="fa-solid fa-sliders"></i> ตั้งค่าระบบ
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+      <!-- ===================================================================== -->
+      <!-- TAB 1: DASHBOARD -->
+      <!-- ===================================================================== -->
+      <section id="tab-dashboard" class="space-y-6">
+        <!-- Top Status Alert Banner (แสดงเมื่อมีสัญญาใกล้หมดอายุ) -->
+        <div id="dashboard-expiry-banner" class="hidden bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm flex items-start justify-between">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h3 class="font-heading font-bold text-sm text-amber-900">แจ้งเตือนสัญญาเช่าใกล้หมดอายุ / หมดอายุ!</h3>
+              <p id="dashboard-expiry-desc" class="text-xs text-amber-800 mt-0.5">พบสัญญาเช่าที่ต้องดำเนินการต่อสัญญาหรือพิจารณาพื้นที่ 0 รายการ</p>
+            </div>
+          </div>
+          <button onclick="switchTab('contracts')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shrink-0 shadow-sm">
+            ดูรายการสัญญา <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+          </button>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: ล็อกพื้นที่ทั้งหมด -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-500 uppercase">ล็อกพื้นที่ทั้งหมด</span>
+              <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <i class="fa-solid fa-border-all text-base"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-total-spaces" class="text-3xl font-heading font-bold text-slate-800">0</span>
+              <span class="text-xs text-slate-500">ล็อก</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span><span id="stat-occupied-spaces" class="text-emerald-600 font-bold">0</span> มีผู้เช่า</span>
+              <span><span id="stat-available-spaces" class="text-blue-600 font-bold">0</span> ว่าง</span>
+              <span><span id="stat-maint-spaces" class="text-amber-600 font-bold">0</span> ปรับปรุง</span>
+            </div>
+          </div>
+
+          <!-- Card 2: สัญญาเช่าที่ใช้งานอยู่ -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-500 uppercase">สัญญาเช่า Active</span>
+              <div class="w-10 h-10 rounded-xl bg-rose-50 text-skru-red flex items-center justify-center">
+                <i class="fa-solid fa-file-contract text-base"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-active-contracts" class="text-3xl font-heading font-bold text-skru-red">0</span>
+              <span class="text-xs text-slate-500">ฉบับ</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>ทะเบียนร้านค้า: <strong id="stat-total-shops" class="text-slate-700">0</strong> ร้าน</span>
+              <button onclick="openModalAddContract()" class="text-skru-red font-semibold hover:underline">+ ทำสัญญา</button>
+            </div>
+          </div>
+
+          <!-- Card 3: สัญญาใกล้หมดอายุ -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-500 uppercase">สัญญาใกล้หมดอายุ (≤30 วัน)</span>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i class="fa-solid fa-clock-rotate-left text-base"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-expiring-contracts" class="text-3xl font-heading font-bold text-amber-600">0</span>
+              <span class="text-xs text-slate-500">ฉบับ</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>หมดอายุแล้ว: <strong id="stat-expired-contracts" class="text-rose-600">0</strong></span>
+              <button onclick="triggerExpiryAlerts()" class="text-xs text-amber-700 hover:underline"><i class="fa-regular fa-paper-plane mr-1"></i>ส่งแจ้งเตือน</button>
+            </div>
+          </div>
+
+          <!-- Card 4: ยอดเรียกเก็บประจำเดือน -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-500 uppercase">ยอดเรียกเก็บเดือนปัจจุบัน</span>
+              <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                <i class="fa-solid fa-baht-sign text-base"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-monthly-total" class="text-2xl font-heading font-bold text-teal-700">0</span>
+              <span class="text-xs text-slate-500">บาท</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span class="text-emerald-600"><i class="fa-solid fa-check-circle mr-1"></i>ชำระแล้ว: <strong id="stat-monthly-paid">0</strong></span>
+              <span class="text-rose-600"><i class="fa-solid fa-clock mr-1"></i>ค้าง: <strong id="stat-monthly-pending">0</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Tables Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Col 1 & 2: รายการสัญญาที่ต้องดำเนินการด่วน -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                <h3 class="font-heading font-bold text-slate-800 text-sm">สัญญาเช่าที่ต้องติดตาม (ใกล้หมดอายุ / เกินกำหนด)</h3>
+              </div>
+              <button onclick="switchTab('contracts')" class="text-xs text-skru-red hover:underline font-semibold">ดูทั้งหมด</button>
+            </div>
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-3">เลขที่สัญญา</th>
+                    <th class="p-3">ร้านค้า / ผู้ประกอบการ</th>
+                    <th class="p-3">ล็อกพื้นที่</th>
+                    <th class="p-3">วันสิ้นสุดสัญญา</th>
+                    <th class="p-3 text-center">สถานะ / วันคงเหลือ</th>
+                    <th class="p-3 text-right">ดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody id="table-dashboard-expiring" class="divide-y divide-slate-100">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Col 3: ภาพรวมโซนพื้นที่ & ระบบ -->
+          <div class="space-y-6">
+            <!-- โซนพื้นที่ภายใน มรภ.สงขลา -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-heading font-bold text-slate-800 text-sm">อัตราการใช้พื้นที่แยกตามโซน</h3>
+                <span class="text-xs text-slate-400">มรภ.สงขลา</span>
+              </div>
+              <div id="dashboard-zone-breakdown" class="space-y-3">
+                <!-- Dynamic Zone Progress Bars -->
+              </div>
+            </div>
+
+            <!-- กล่องข้อมูลระบบและการเชื่อมต่อ Google Sheet -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center gap-2 text-skru-gold mb-3 text-xs font-semibold">
+                <i class="fa-solid fa-database"></i> ฐานข้อมูล Google Sheets
+              </div>
+              <div class="text-xs text-slate-300 space-y-1 font-mono">
+                <div>ID: <span class="text-white select-all">1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA</span></div>
+                <div class="text-[11px] text-slate-400">อัปเดตล่าสุด: <span id="sync-timestamp" class="text-slate-300">-</span></div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-700 flex gap-2">
+                <button onclick="refreshDataFromBackend()" class="flex-1 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow">
+                  <i class="fa-solid fa-arrows-rotate"></i> ซิงค์ข้อมูลกับชีต
+                </button>
+                <a href="https://docs.google.com/spreadsheets/d/1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA/edit" target="_blank" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded-lg transition-colors flex items-center" title="เปิด Google Sheets โดยตรง">
+                  <i class="fa-solid fa-up-right-from-square"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 2: SPACES & ZONES (โซนและล็อกพื้นที่) -->
+      <!-- ===================================================================== -->
+      <section id="tab-spaces" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-heading font-bold text-slate-800">จัดการโซนและล็อกพื้นที่ร้านค้า</h2>
+            <p class="text-xs text-slate-500">ตรวจสอบสถานะล็อกว่าง มีผู้เช่า ปิดปรับปรุง และมิเตอร์น้ำ-ไฟประจำจุด</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="openModalAddZone()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group"></i> + จัดการโซน
+            </button>
+            <button onclick="openModalAddSpace()" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> + เพิ่มล็อกพื้นที่
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap gap-3 items-center bg-white p-4 rounded-xl border border-slate-200 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-600">กรองตามโซน:</span>
+            <select id="filter-space-zone" onchange="renderSpacesList()" class="px-3 py-1.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-skru-red">
+              <option value="ALL">-- ทุกโซนใน มรภ.สงขลา --</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-600">สถานะ:</span>
+            <select id="filter-space-status" onchange="renderSpacesList()" class="px-3 py-1.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-skru-red">
+              <option value="ALL">-- ทุกสถานะ --</option>
+              <option value="AVAILABLE">ว่างพร้อมเช่า (AVAILABLE)</option>
+              <option value="OCCUPIED">มีผู้เช่าแล้ว (OCCUPIED)</option>
+              <option value="MAINTENANCE">ปิดปรับปรุง (MAINTENANCE)</option>
+            </select>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <input type="text" id="search-space-keyword" oninput="renderSpacesList()" placeholder="ค้นหารหัสล็อก / ชื่อล็อก..." class="w-full px-3 py-1.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-skru-red">
+          </div>
+        </div>
+
+        <!-- Spaces Grid Cards -->
+        <div id="spaces-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Dynamic Space Cards -->
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 3: SHOPS (ทะเบียนร้านค้าและผู้ประกอบการ) -->
+      <!-- ===================================================================== -->
+      <section id="tab-shops" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-heading font-bold text-slate-800">ทะเบียนข้อมูลร้านค้าและผู้ประกอบการ</h2>
+            <p class="text-xs text-slate-500">บันทึกข้อมูลผู้เช่า เลขบัตรประชาชน เบอร์ติดต่อ และประวัติสัญญาเช่า</p>
+          </div>
+          <button onclick="openModalAddShop()" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow self-start sm:self-auto">
+            <i class="fa-solid fa-user-plus"></i> + ลงทะเบียนร้านค้าใหม่
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-4">
+            <input type="text" id="search-shop-keyword" oninput="renderShopsList()" placeholder="ค้นหาร้านค้า, ชื่อผู้เช่า, เลขบัตร หรือเบอร์โทร..." class="max-w-md w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-skru-red">
+            <span id="shop-count-badge" class="text-xs text-slate-500 font-semibold">0 รายการ</span>
+          </div>
+
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">รหัสร้านค้า</th>
+                  <th class="p-3">ชื่อร้านค้า / ประเภท</th>
+                  <th class="p-3">ผู้ประกอบการ / เลขบัตร ปชช.</th>
+                  <th class="p-3">เบอร์ติดต่อ / Line / Email</th>
+                  <th class="p-3">สัญญาเช่าปัจจุบัน</th>
+                  <th class="p-3 text-center">สถานะ</th>
+                  <th class="p-3 text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="table-shops-body" class="divide-y divide-slate-100">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 4: CONTRACTS (สัญญาเช่า & แจ้งเตือนหมดอายุ) -->
+      <!-- ===================================================================== -->
+      <section id="tab-contracts" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-heading font-bold text-slate-800">การบริหารสัญญาเช่าพื้นที่ & ระบบแจ้งเตือน</h2>
+            <p class="text-xs text-slate-500">ติดตามระยะเวลาสัญญา ตรวจสอบวันคงเหลือ ต่อสัญญาเช่า และแนบเอกสาร PDF</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="triggerExpiryAlerts()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg transition-colors border border-amber-300 flex items-center gap-1.5">
+              <i class="fa-regular fa-paper-plane"></i> จำลองส่งอีเมลแจ้งเตือน
+            </button>
+            <button onclick="openModalAddContract()" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-file-circle-plus"></i> + ทำสัญญาเช่าใหม่
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter tabs for Contracts -->
+        <div class="flex gap-2 border-b border-slate-200 text-xs font-semibold pb-2 overflow-x-auto custom-scroll">
+          <button onclick="filterContractsByStatus('ALL')" id="filter-contract-all" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg">ทั้งหมด</button>
+          <button onclick="filterContractsByStatus('EXPIRING')" id="filter-contract-expiring" class="px-3 py-1.5 bg-slate-100 text-amber-700 hover:bg-amber-50 rounded-lg">ใกล้หมดสัญญา (≤ 30 วัน)</button>
+          <button onclick="filterContractsByStatus('EXPIRED')" id="filter-contract-expired" class="px-3 py-1.5 bg-slate-100 text-rose-700 hover:bg-rose-50 rounded-lg">หมดอายุแล้ว</button>
+          <button onclick="filterContractsByStatus('ACTIVE')" id="filter-contract-active" class="px-3 py-1.5 bg-slate-100 text-emerald-700 hover:bg-emerald-50 rounded-lg">สถานะปกติ (Active)</button>
+          <button onclick="filterContractsByStatus('CLOSED')" id="filter-contract-closed" class="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg">สิ้นสุด/ยกเลิกสัญญา</button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">เลขที่สัญญา</th>
+                  <th class="p-3">ร้านค้า</th>
+                  <th class="p-3">ล็อกพื้นที่</th>
+                  <th class="p-3">ระยะเวลาสัญญา</th>
+                  <th class="p-3 text-right">ค่าเช่า/ด.</th>
+                  <th class="p-3 text-center">สถานะอายุสัญญา</th>
+                  <th class="p-3 text-center">เอกสารสัญญา</th>
+                  <th class="p-3 text-right">การดำเนินการ</th>
+                </tr>
+              </thead>
+              <tbody id="table-contracts-body" class="divide-y divide-slate-100">
+                <!-- Dynamic Contract Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 5: BILLINGS & UTILITIES (ค่าเช่า & ค่าน้ำ-ค่าไฟ) -->
+      <!-- ===================================================================== -->
+      <section id="tab-billings" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-heading font-bold text-slate-800">บันทึกค่าเช่า มิเตอร์ค่าน้ำ-ค่าไฟ และการชำระเงิน</h2>
+            <p class="text-xs text-slate-500">จดเลขมิเตอร์ประจำเดือน คำนวณยอดสุทธิอัตโนมัติ และพิมพ์ใบแจ้งหนี้/ใบเสร็จ</p>
+          </div>
+          <div class="flex flex-wrap gap-2 items-center">
+            <input type="month" id="selected-billing-month" onchange="renderBillingsList()" class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-skru-red">
+            <button onclick="openModalAddBilling()" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-calculator"></i> + จดมิเตอร์/ออกใบแจ้งยอด
+            </button>
+          </div>
+        </div>
+
+        <!-- Monthly Summary Banner -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs">
+            <span class="text-blue-700 font-semibold uppercase">ยอดรวมประจำเดือนทั้งหมด</span>
+            <div class="text-xl font-heading font-bold text-blue-900 mt-1"><span id="billing-summary-total">0.00</span> บาท</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs">
+            <span class="text-emerald-700 font-semibold uppercase">ชำระแล้ว (PAID)</span>
+            <div class="text-xl font-heading font-bold text-emerald-900 mt-1"><span id="billing-summary-paid">0.00</span> บาท</div>
+          </div>
+          <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 text-xs">
+            <span class="text-rose-700 font-semibold uppercase">ค้างชำระ / รอชำระ (PENDING)</span>
+            <div class="text-xl font-heading font-bold text-rose-900 mt-1"><span id="billing-summary-pending">0.00</span> บาท</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">เลขที่ใบแจ้งหนี้</th>
+                  <th class="p-3">ร้านค้า / ล็อก</th>
+                  <th class="p-3 text-right">ค่าเช่า</th>
+                  <th class="p-3 text-center">มิเตอร์น้ำ (หน่วย)</th>
+                  <th class="p-3 text-center">มิเตอร์ไฟ (หน่วย)</th>
+                  <th class="p-3 text-right">ยอดรวมสุทธิ</th>
+                  <th class="p-3 text-center">สถานะชำระเงิน</th>
+                  <th class="p-3 text-right">จัดการ / พิมพ์</th>
+                </tr>
+              </thead>
+              <tbody id="table-billings-body" class="divide-y divide-slate-100">
+                <!-- Dynamic Billing Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 6: USERS & ALLOWLIST (จัดการผู้ใช้งาน & สิทธิ์) -->
+      <!-- ===================================================================== -->
+      <section id="tab-users" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-heading font-bold text-slate-800">จัดการสิทธิ์ผู้ใช้งานระบบ (Google Login Allowlist)</h2>
+            <p class="text-xs text-slate-500">กำหนดรายชื่ออีเมล Google ของเจ้าหน้าที่ที่มีสิทธิ์เข้าใช้งานระบบ (ADMIN / STAFF)</p>
+          </div>
+          <button onclick="openModalAddUser()" id="btn-add-user" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-user-shield"></i> + เพิ่มผู้ใช้งานในระบบ
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">ผู้ใช้งาน</th>
+                  <th class="p-3">อีเมล Google</th>
+                  <th class="p-3">หน่วยงาน</th>
+                  <th class="p-3 text-center">บทบาท (Role)</th>
+                  <th class="p-3 text-center">สถานะสิทธิ์</th>
+                  <th class="p-3 text-right">แก้ไข</th>
+                </tr>
+              </thead>
+              <tbody id="table-users-body" class="divide-y divide-slate-100">
+                <!-- Dynamic User Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- TAB 7: SETTINGS & AUDIT LOGS (ตั้งค่าระบบ & ประวัติ) -->
+      <!-- ===================================================================== -->
+      <section id="tab-settings" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Col 1: ตั้งค่าอัตราค่าบริการและพารามิเตอร์ -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-heading font-bold text-slate-800 text-sm border-b pb-3">ตั้งค่าพารามิเตอร์ระบบ</h3>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">อัตราค่าน้ำประปา (บาท/หน่วย)</label>
+              <input type="number" id="setting-water-rate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-skru-red">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">อัตราค่าไฟฟ้า (บาท/หน่วย)</label>
+              <input type="number" id="setting-electric-rate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-skru-red">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">ค่าจัดการขยะ/ส่วนกลางมาตรฐาน (บาท/เดือน)</label>
+              <input type="number" id="setting-garbage-fee" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-skru-red">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">แจ้งเตือนสัญญาใกล้หมดอายุล่วงหน้า (วัน)</label>
+              <input type="number" id="setting-warning-days" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-skru-red">
+            </div>
+
+            <div class="pt-2">
+              <button onclick="saveSystemSettingsFromUI()" class="w-full py-2.5 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg transition-colors shadow">
+                บันทึกการตั้งค่า
+              </button>
+            </div>
+          </div>
+
+          <!-- Col 2 & 3: Audit Logs -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+              <div>
+                <h3 class="font-heading font-bold text-slate-800 text-sm">ประวัติการทำรายการ (Audit Logs - NFR-AUD-01)</h3>
+                <p class="text-xs text-slate-500">บันทึกทุกการสร้าง แก้ไขสัญญา และการรับชำระเงินพร้อมระบุตัวตนเจ้าหน้าที่</p>
+              </div>
+              <span class="text-xs text-slate-400">100 รายการล่าสุด</span>
+            </div>
+            <div class="overflow-x-auto max-h-[400px] custom-scroll">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-slate-700 font-semibold sticky top-0">
+                  <tr>
+                    <th class="p-2">วัน-เวลา</th>
+                    <th class="p-2">ผู้ทำรายการ</th>
+                    <th class="p-2">การดำเนินการ</th>
+                    <th class="p-2">รายละเอียด</th>
+                  </tr>
+                </thead>
+                <tbody id="table-audit-logs" class="divide-y divide-slate-100 font-mono text-[11px]">
+                  <!-- Dynamic Logs -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. Modals (Dialogs สำหรับการจัดการข้อมูล) -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal: จัดการล็อกพื้นที่ (Space Modal) -->
+  <div id="modal-space" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 id="modal-space-title" class="font-heading font-bold text-sm">เพิ่มล็อกพื้นที่ใหม่</h3>
+        <button onclick="closeModal('modal-space')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveSpace(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-space-id">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">รหัสล็อกพื้นที่ (Space Code)*</label>
+            <input type="text" id="form-space-code" required placeholder="เช่น C1-A05" class="w-full px-3 py-2 border rounded-lg uppercase">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">โซนพื้นที่*</label>
+            <select id="form-space-zone" required class="w-full px-3 py-2 border rounded-lg">
+              <!-- Dynamic Options -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">ชื่อเรียก / รายละเอียดล็อก</label>
+          <input type="text" id="form-space-name" placeholder="เช่น ล็อกอาหารว่าง โซนริมคลอง" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ขนาดพื้นที่ (ตร.ม.)</label>
+            <input type="number" id="form-space-size" step="0.1" value="12" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">อัตราค่าเช่ามาตรฐาน (บาท/ด.)*</label>
+            <input type="number" id="form-space-rent" required value="3500" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">หมายเลขมิเตอร์น้ำ</label>
+            <input type="text" id="form-space-water-meter" placeholder="WM-105" class="w-full px-3 py-1.5 border rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลขมิเตอร์น้ำล่าสุด</label>
+            <input type="number" id="form-space-water-reading" value="0" class="w-full px-3 py-1.5 border rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">หมายเลขมิเตอร์ไฟ</label>
+            <input type="text" id="form-space-elec-meter" placeholder="EM-105" class="w-full px-3 py-1.5 border rounded-lg bg-white">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลขมิเตอร์ไฟล่าสุด</label>
+            <input type="number" id="form-space-elec-reading" value="0" class="w-full px-3 py-1.5 border rounded-lg bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">สถานะล็อกพื้นที่</label>
+          <select id="form-space-status" class="w-full px-3 py-2 border rounded-lg">
+            <option value="AVAILABLE">ว่างพร้อมเช่า (AVAILABLE)</option>
+            <option value="OCCUPIED">มีผู้เช่าแล้ว (OCCUPIED)</option>
+            <option value="MAINTENANCE">ปิดปรับปรุง (MAINTENANCE)</option>
+          </select>
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-space')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: ทะเบียนร้านค้า (Shop Modal) -->
+  <div id="modal-shop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 id="modal-shop-title" class="font-heading font-bold text-sm">ลงทะเบียนร้านค้าใหม่</h3>
+        <button onclick="closeModal('modal-shop')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveShop(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-shop-id">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ชื่อร้านค้า*</label>
+            <input type="text" id="form-shop-name" required placeholder="เช่น ครัวป้าพร" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ประเภทกิจการ</label>
+            <select id="form-shop-category" class="w-full px-3 py-2 border rounded-lg">
+              <option value="อาหารตามสั่ง">อาหารตามสั่ง</option>
+              <option value="ข้าวราดแกง">ข้าวราดแกง</option>
+              <option value="ก๋วยเตี๋ยว">ก๋วยเตี๋ยว</option>
+              <option value="เครื่องดื่ม/กาแฟ">เครื่องดื่ม/กาแฟ</option>
+              <option value="เบเกอรี/ของว่าง">เบเกอรี/ของว่าง</option>
+              <option value="ผลไม้/ของหวาน">ผลไม้/ของหวาน</option>
+              <option value="ถ่ายเอกสาร/เครื่องเขียน">ถ่ายเอกสาร/เครื่องเขียน</option>
+              <option value="สวัสดิการ/บริการ">สวัสดิการ/บริการ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ชื่อ-นามสกุล ผู้ประกอบการ*</label>
+            <input type="text" id="form-shop-owner" required placeholder="นาย/นาง/นางสาว..." class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลขประจำตัวประชาชน (13 หลัก)</label>
+            <input type="text" id="form-shop-citizen" maxlength="13" placeholder="19098..." class="w-full px-3 py-2 border rounded-lg font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อ*</label>
+            <input type="text" id="form-shop-phone" required placeholder="081-xxx-xxxx" class="w-full px-3 py-2 border rounded-lg font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Line ID หรือ อีเมล</label>
+            <input type="text" id="form-shop-line" placeholder="line:xxxx" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">สถานะ</label>
+          <select id="form-shop-status" class="w-full px-3 py-2 border rounded-lg">
+            <option value="ACTIVE">ปกติ (ACTIVE)</option>
+            <option value="INACTIVE">ระงับ/ยกเลิก (INACTIVE)</option>
+          </select>
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-shop')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: ทำสัญญาเช่า (Contract Modal) -->
+  <div id="modal-contract" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 id="modal-contract-title" class="font-heading font-bold text-sm">ทำสัญญาเช่าพื้นที่ใหม่</h3>
+        <button onclick="closeModal('modal-contract')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveContract(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-contract-id">
+        <input type="hidden" id="form-contract-renew-from">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลือกร้านค้า / ผู้เช่า*</label>
+            <select id="form-contract-shop" required class="w-full px-3 py-2 border rounded-lg">
+              <!-- Dynamic Options -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลือกล็อกพื้นที่ว่าง*</label>
+            <select id="form-contract-space" onchange="autoFillContractRent()" required class="w-full px-3 py-2 border rounded-lg">
+              <!-- Dynamic Options -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">วันเริ่มสัญญา*</label>
+            <input type="date" id="form-contract-start" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">วันสิ้นสุดสัญญา*</label>
+            <input type="date" id="form-contract-end" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ค่าเช่าพื้นที่จริง (บาท/เดือน)*</label>
+            <input type="number" id="form-contract-rent" required class="w-full px-3 py-2 border rounded-lg font-semibold text-slate-800">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เงินประกันสัญญา (บาท)</label>
+            <input type="number" id="form-contract-deposit" value="7000" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">แนบไฟล์สำเนาสัญญาเช่า (PDF หรือ รูปภาพ เก็บใน Google Drive)</label>
+          <input type="file" id="form-contract-file" accept=".pdf,image/*" class="w-full px-3 py-2 border rounded-lg bg-slate-50 text-slate-500">
+          <p class="text-[10px] text-slate-400 mt-1">หากไม่แนบไฟล์ ระบบจะใช้ลิงก์สัญญามาตรฐานของระบบ</p>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">เงื่อนไขพิเศษ / หมายเหตุ</label>
+          <textarea id="form-contract-note" rows="2" placeholder="ระบุเงื่อนไขการต่อสัญญาหรือรายละเอียดเพิ่มเติม..." class="w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-contract')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกสัญญาเช่า</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: จดมิเตอร์ / ออกใบแจ้งหนี้รายเดือน (Billing Modal) -->
+  <div id="modal-billing" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 class="font-heading font-bold text-sm">จดมิเตอร์น้ำ-ไฟ & บันทึกค่าเช่ารายเดือน</h3>
+        <button onclick="closeModal('modal-billing')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveBilling(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-billing-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">รอบเดือนเรียกเก็บ*</label>
+            <input type="month" id="form-billing-month" required class="w-full px-3 py-2 border rounded-lg font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">เลือกสัญญาเช่า / ร้านค้า*</label>
+            <select id="form-billing-contract" onchange="autoFillBillingFromContract()" required class="w-full px-3 py-2 border rounded-lg">
+              <!-- Dynamic Active Contracts -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Meter Reset Checkbox -->
+        <div class="flex items-center gap-2 bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-amber-900">
+          <input type="checkbox" id="form-billing-meter-reset" onchange="calculateBillingTotals()" class="rounded border-slate-300 text-skru-red">
+          <label for="form-billing-meter-reset" class="text-[11px] font-medium cursor-pointer">
+            เปลี่ยนมิเตอร์ใหม่ในเดือนนี้ (กรณีเลขมิเตอร์เริ่มต้นที่ 0 หรือน้อยกว่าเดิม)
+          </label>
+        </div>
+
+        <!-- Water Meter Calc -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between font-semibold text-slate-700">
+            <span><i class="fa-solid fa-faucet-drip text-blue-500 mr-1"></i> มิเตอร์น้ำประปา (เรท <span id="label-water-rate">15</span> บ./หน่วย)</span>
+            <span id="label-water-calc" class="text-blue-700">0 หน่วย = 0.00 บาท</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-500">เลขครั้งก่อน</label>
+              <input type="number" id="form-billing-water-prev" readonly class="w-full px-3 py-1.5 border rounded-lg bg-slate-100 font-mono">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-700 font-medium">เลขมิเตอร์ครั้งนี้*</label>
+              <input type="number" id="form-billing-water-curr" required oninput="calculateBillingTotals()" class="w-full px-3 py-1.5 border rounded-lg bg-white font-mono font-bold">
+            </div>
+          </div>
+        </div>
+
+        <!-- Electric Meter Calc -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+          <div class="flex items-center justify-between font-semibold text-slate-700">
+            <span><i class="fa-solid fa-bolt text-amber-500 mr-1"></i> มิเตอร์ไฟฟ้า (เรท <span id="label-elec-rate">5</span> บ./หน่วย)</span>
+            <span id="label-elec-calc" class="text-amber-700">0 หน่วย = 0.00 บาท</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-500">เลขครั้งก่อน</label>
+              <input type="number" id="form-billing-elec-prev" readonly class="w-full px-3 py-1.5 border rounded-lg bg-slate-100 font-mono">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-700 font-medium">เลขมิเตอร์ครั้งนี้*</label>
+              <input type="number" id="form-billing-elec-curr" required oninput="calculateBillingTotals()" class="w-full px-3 py-1.5 border rounded-lg bg-white font-mono font-bold">
+            </div>
+          </div>
+        </div>
+
+        <!-- Other Fee & Total -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ค่าเช่าพื้นที่</label>
+            <input type="number" id="form-billing-rent" readonly class="w-full px-3 py-1.5 border rounded-lg bg-slate-100 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ค่าขยะ/ส่วนกลาง</label>
+            <input type="number" id="form-billing-other" value="150" oninput="calculateBillingTotals()" class="w-full px-3 py-1.5 border rounded-lg">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">ส่วนลด</label>
+            <input type="number" id="form-billing-discount" value="0" oninput="calculateBillingTotals()" class="w-full px-3 py-1.5 border rounded-lg">
+          </div>
+        </div>
+
+        <!-- Grand Total Banner -->
+        <div class="p-3 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl border border-teal-200 flex items-center justify-between">
+          <span class="font-heading font-bold text-slate-700 text-sm">ยอดเรียกเก็บสุทธิประจำเดือน:</span>
+          <span class="text-xl font-heading font-bold text-teal-800"><span id="form-billing-total-display">0.00</span> บาท</span>
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-billing')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกใบแจ้งยอด</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: บันทึกรับชำระเงิน (Payment Modal) -->
+  <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-emerald-700 to-teal-800 text-white flex items-center justify-between">
+        <h3 class="font-heading font-bold text-sm">บันทึกการรับชำระเงิน</h3>
+        <button onclick="closeModal('modal-payment')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSavePayment(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="form-payment-billing-id">
+
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">เลขที่ใบแจ้งหนี้:</span>
+            <span id="pay-modal-invoice-no" class="font-semibold text-slate-800 font-mono">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">ร้านค้า:</span>
+            <span id="pay-modal-shop-name" class="font-semibold text-slate-800">-</span>
+          </div>
+          <div class="flex justify-between text-sm pt-2 border-t">
+            <span class="font-bold text-slate-700">ยอดที่ต้องชำระ:</span>
+            <span id="pay-modal-amount" class="font-bold text-emerald-700 font-heading text-base">0.00 บาท</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">วันที่ชำระเงิน*</label>
+          <input type="date" id="form-payment-date" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">เลขที่ใบเสร็จรับเงิน มรภ.สงขลา*</label>
+          <input type="text" id="form-payment-receipt-no" required placeholder="เช่น RC-SKRU-6910xx" class="w-full px-3 py-2 border rounded-lg font-mono">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">แนบไฟล์สลิปหรือใบเสร็จ (เก็บใน Google Drive)</label>
+          <input type="file" id="form-payment-slip-file" accept="image/*,.pdf" class="w-full px-3 py-2 border rounded-lg bg-slate-50 text-slate-500">
+        </div>
+
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-payment')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold">ยืนยันรับชำระเงิน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: พิมพ์ใบแจ้งหนี้ / ใบเสร็จรับเงิน มรภ.สงขลา (Official Printable Area) -->
+  <div id="modal-invoice-print" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-4 bg-slate-800 text-white flex items-center justify-between no-print">
+        <h3 class="font-heading font-bold text-sm">พิมพ์เอกสารใบแจ้งยอด / ใบเสร็จรับเงิน</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1.5 bg-skru-red hover:bg-rose-800 text-white text-xs font-semibold rounded-lg flex items-center gap-1 shadow">
+            <i class="fa-solid fa-print"></i> สั่งพิมพ์เอกสาร
+          </button>
+          <button onclick="closeModal('modal-invoice-print')" class="text-slate-300 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+      </div>
+
+      <!-- Printable Area Content -->
+      <div id="print-area" class="p-8 flex-1 overflow-y-auto custom-scroll text-slate-800 text-xs">
+        <!-- University Official Header -->
+        <div class="border-b-2 border-skru-red pb-4 mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full border-2 border-skru-red flex items-center justify-center font-bold text-skru-red text-xl">
+              SKRU
+            </div>
+            <div>
+              <h2 class="font-heading font-bold text-base text-slate-900">มหาวิทยาลัยราชภัฏสงขลา</h2>
+              <p class="text-xs text-slate-600">งานบริหารทรัพย์สินและสิทธิประโยชน์ กองกลาง สำนักงานอธิการบดี</p>
+              <p class="text-[11px] text-slate-500">160 ถ.กาญจนวานิช ต.เขารูปช้าง อ.เมือง จ.สงขลา 90000</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="print-doc-type" class="inline-block px-3 py-1 bg-rose-100 text-skru-red font-bold rounded-lg text-sm font-heading">ใบแจ้งหนี้ / INVOICE</span>
+            <div class="text-xs font-mono text-slate-700 mt-1">เลขที่: <span id="print-doc-no" class="font-bold">-</span></div>
+            <div class="text-[11px] text-slate-500">วันที่: <span id="print-doc-date">-</span></div>
+          </div>
+        </div>
+
+        <!-- Tenant Info -->
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+          <div>
+            <span class="text-slate-400 font-semibold block text-[10px] uppercase">ผู้เช่า / ผู้ประกอบการ:</span>
+            <h4 id="print-shop-name" class="font-bold text-slate-800 text-sm mt-0.5">-</h4>
+            <p id="print-owner-name" class="text-slate-600 mt-0.5">-</p>
+            <p id="print-phone" class="text-slate-500 font-mono text-[11px] mt-0.5">-</p>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 font-semibold block text-[10px] uppercase">พื้นที่เช่า / สัญญา:</span>
+            <p id="print-space-info" class="font-semibold text-slate-800 mt-0.5">-</p>
+            <p id="print-contract-no" class="text-slate-600 text-[11px] mt-0.5">สัญญาเลขที่: -</p>
+            <p id="print-billing-month" class="text-skru-red font-semibold text-[11px] mt-0.5">ประจำรอบเดือน: -</p>
+          </div>
+        </div>
+
+        <!-- Table of Charges -->
+        <table class="w-full text-left text-xs border border-slate-200 mb-6">
+          <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+            <tr>
+              <th class="p-2.5">ลำดับ</th>
+              <th class="p-2.5">รายการเรียกเก็บ</th>
+              <th class="p-2.5 text-center">จดมิเตอร์ (ก่อน - หลัง)</th>
+              <th class="p-2.5 text-center">จำนวนหน่วย</th>
+              <th class="p-2.5 text-right">อัตรา/หน่วย</th>
+              <th class="p-2.5 text-right">จำนวนเงิน (บาท)</th>
+            </tr>
+          </thead>
+          <tbody id="print-table-items" class="divide-y divide-slate-100">
+            <!-- Dynamic Items -->
+          </tbody>
+          <tfoot class="bg-slate-50 border-t-2 border-slate-300 font-bold">
+            <tr>
+              <td colspan="5" class="p-2.5 text-right">ยอดรวมสุทธิทั้งสิ้น (บาท):</td>
+              <td id="print-grand-total" class="p-2.5 text-right text-skru-red font-heading text-sm">0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Signatures & Status -->
+        <div class="grid grid-cols-2 gap-8 pt-6 border-t border-slate-200 text-center">
+          <div>
+            <div class="h-12 flex items-center justify-center">
+              <span id="print-payment-badge" class="px-3 py-1 bg-amber-100 text-amber-800 font-bold rounded-full text-xs">รอชำระเงิน (PENDING)</span>
+            </div>
+            <p class="text-slate-500 text-[11px]">สถานะการชำระเงิน</p>
+          </div>
+          <div>
+            <div class="h-12 border-b border-dashed border-slate-400 mx-auto w-48"></div>
+            <p id="print-officer-name" class="text-slate-700 font-semibold mt-1">เจ้าหน้าที่ผู้มีอำนาจลงนาม</p>
+            <p class="text-slate-400 text-[10px]">งานบริหารทรัพย์สินและสิทธิประโยชน์ มรภ.สงขลา</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: จัดการโซนพื้นที่ (Zone Modal) -->
+  <div id="modal-zone" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 class="font-heading font-bold text-sm">เพิ่มโซนพื้นที่ใหม่</h3>
+        <button onclick="closeModal('modal-zone')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveZone(event)" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">รหัสโซน (Zone Code)*</label>
+          <input type="text" id="form-zone-code" required placeholder="เช่น CANTEEN-MAIN" class="w-full px-3 py-2 border rounded-lg uppercase">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">ชื่อโซนพื้นที่*</label>
+          <input type="text" id="form-zone-name" required placeholder="เช่น โรงอาหารกลาง (ริมคลอง)" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">รายละเอียดสถานที่ตั้ง</label>
+          <input type="text" id="form-zone-location" placeholder="เช่น อาคารโรงอาหารกลาง ติดคลองสำโรง" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">ความจุล็อกสูงสุดโดยประมาณ</label>
+          <input type="number" id="form-zone-capacity" value="20" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-zone')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกโซน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: เพิ่มผู้ใช้งานใน Allowlist (User Modal) -->
+  <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-skru-red to-rose-900 text-white flex items-center justify-between">
+        <h3 class="font-heading font-bold text-sm">เพิ่มสิทธิ์ผู้ใช้งาน Google Login</h3>
+        <button onclick="closeModal('modal-user')" class="text-rose-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSaveUser(event)" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">อีเมล Google (@skru.ac.th หรือ Gmail)*</label>
+          <input type="email" id="form-user-email" required placeholder="staff.name@skru.ac.th" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">ชื่อ-นามสกุล เจ้าหน้าที่*</label>
+          <input type="text" id="form-user-name" required placeholder="นาย/นาง/นางสาว..." class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">หน่วยงาน / สังกัด</label>
+          <input type="text" id="form-user-dept" value="งานบริหารทรัพย์สินและสิทธิประโยชน์" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">บทบาท (Role)*</label>
+            <select id="form-user-role" class="w-full px-3 py-2 border rounded-lg font-semibold">
+              <option value="STAFF">STAFF (เจ้าหน้าที่)</option>
+              <option value="ADMIN">ADMIN (ผู้ดูแลระบบ)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">สถานะสิทธิ์</label>
+            <select id="form-user-status" class="w-full px-3 py-2 border rounded-lg">
+              <option value="ACTIVE">ACTIVE (อนุญาต)</option>
+              <option value="INACTIVE">INACTIVE (ระงับ)</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-3 border-t flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold">บันทึกสิทธิ์</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-base"></i>
+    <span id="toast-message">ข้อความแจ้งเตือน</span>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. Application Core Logic (JavaScript) -->
+  <!-- ========================================================================= -->
+  <script>
+    const SPREADSHEET_ID = '1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA';
+
+    // Application In-Memory State
+    let appState = {
+      currentUser: null,
+      settings: {
+        WATER_RATE: 15,
+        ELECTRIC_RATE: 5,
+        GARBAGE_FEE_DEFAULT: 150,
+        EXPIRY_WARNING_DAYS: 30
+      },
+      zones: [],
+      spaces: [],
+      shops: [],
+      contracts: [],
+      billings: [],
+      users: [],
+      auditLogs: [],
+      contractStatusFilter: 'ALL'
+    };
+
+    // Default Seed Data (ใช้เมื่อเปิดไฟล์แบบ Standalone Browser หรือกำลังซิงค์กับ Sheet ครั้งแรก)
+    const SEED_DATA = {
+      users: [
+        { user_id: 'USR-001', email: 'admin.property@skru.ac.th', full_name: 'คุณสมศักดิ์ ดูแลทรัพย์สิน (Admin)', role: 'ADMIN', department: 'งานบริหารทรัพย์สินและสิทธิประโยชน์', status: 'ACTIVE', avatar_color: '#b91c1c' },
+        { user_id: 'USR-002', email: 'staff.central@skru.ac.th', full_name: 'คุณวิภาวรรณ กองกลาง (Staff)', role: 'STAFF', department: 'กองกลาง สำนักงานอธิการบดี', status: 'ACTIVE', avatar_color: '#0f766e' },
+        { user_id: 'USR-003', email: 'utility.officer@skru.ac.th', full_name: 'คุณณัฐพล จดมิเตอร์ (Staff)', role: 'STAFF', department: 'งานสาธารณูปโภคและอาคารสถานที่', status: 'ACTIVE', avatar_color: '#1d4ed8' }
+      ],
+      zones: [
+        { zone_id: 'ZN-01', zone_code: 'CANTEEN-MAIN', zone_name: 'โรงอาหารกลาง (ริมคลอง)', location_detail: 'อาคารโรงอาหารกลาง ติดคลองสำโรง มรภ.สงขลา', total_capacity: 20, status: 'ACTIVE' },
+        { zone_id: 'ZN-02', zone_code: 'CANTEEN-FMS', zone_name: 'ศูนย์อาหารคณะวิทยาการจัดการ', location_detail: 'ชั้น 1 อาคารคณะวิทยาการจัดการ', total_capacity: 10, status: 'ACTIVE' },
+        { zone_id: 'ZN-03', zone_code: 'BLDG-COMPLEX', zone_name: 'อาคารเรียนรวมและปฏิบัติการ', location_detail: 'โถงชั้น 1 อาคารเรียนรวม (ร้านกาแฟ/ถ่ายเอกสาร)', total_capacity: 8, status: 'ACTIVE' },
+        { zone_id: 'ZN-04', zone_code: 'KIOSK-SPORT', zone_name: 'ซุ้มร้านค้าสวัสดิการและสนามกีฬา', location_detail: 'บริเวณข้างสนามกีฬากลางและหอพักนักศึกษา', total_capacity: 6, status: 'ACTIVE' }
+      ],
+      spaces: [
+        { space_id: 'SPC-001', space_code: 'C1-A01', zone_id: 'ZN-01', space_name: 'ล็อกอาหารตามสั่ง A01', size_sqm: 12, standard_rent: 3500, water_meter_no: 'WM-101', last_water_reading: 240, elec_meter_no: 'EM-101', last_elec_reading: 1520, status: 'OCCUPIED' },
+        { space_id: 'SPC-002', space_code: 'C1-A02', zone_id: 'ZN-01', space_name: 'ล็อกข้าวแกงปักษ์ใต้ A02', size_sqm: 12, standard_rent: 3500, water_meter_no: 'WM-102', last_water_reading: 310, elec_meter_no: 'EM-102', last_elec_reading: 1890, status: 'OCCUPIED' },
+        { space_id: 'SPC-003', space_code: 'C1-A03', zone_id: 'ZN-01', space_name: 'ล็อกก๋วยเตี๋ยวเรือ A03', size_sqm: 12, standard_rent: 3500, water_meter_no: 'WM-103', last_water_reading: 180, elec_meter_no: 'EM-103', last_elec_reading: 980, status: 'AVAILABLE' },
+        { space_id: 'SPC-004', space_code: 'C1-B01', zone_id: 'ZN-01', space_name: 'ล็อกเครื่องดื่มและผลไม้ B01', size_sqm: 9, standard_rent: 2800, water_meter_no: 'WM-104', last_water_reading: 410, elec_meter_no: 'EM-104', last_elec_reading: 2150, status: 'OCCUPIED' },
+        { space_id: 'SPC-005', space_code: 'FMS-01', zone_id: 'ZN-02', space_name: 'ล็อกเบเกอรีและของว่าง FMS-01', size_sqm: 10, standard_rent: 3000, water_meter_no: 'WM-201', last_water_reading: 95, elec_meter_no: 'EM-201', last_elec_reading: 1340, status: 'OCCUPIED' },
+        { space_id: 'SPC-006', space_code: 'FMS-02', zone_id: 'ZN-02', space_name: 'ล็อกอาหารฮาลาล FMS-02', size_sqm: 12, standard_rent: 3200, water_meter_no: 'WM-202', last_water_reading: 120, elec_meter_no: 'EM-202', last_elec_reading: 870, status: 'AVAILABLE' },
+        { space_id: 'SPC-007', space_code: 'BLD-K01', zone_id: 'ZN-03', space_name: 'พื้นที่ร้านกาแฟสด อาคารเรียนรวม', size_sqm: 16, standard_rent: 5500, water_meter_no: 'WM-301', last_water_reading: 520, elec_meter_no: 'EM-301', last_elec_reading: 4300, status: 'OCCUPIED' },
+        { space_id: 'SPC-008', space_code: 'BLD-K02', zone_id: 'ZN-03', space_name: 'ศูนย์ถ่ายเอกสารและเครื่องเขียน', size_sqm: 20, standard_rent: 4500, water_meter_no: 'WM-302', last_water_reading: 45, elec_meter_no: 'EM-302', last_elec_reading: 3890, status: 'MAINTENANCE' }
+      ],
+      shops: [
+        { shop_id: 'SHP-001', shop_code: 'SKRU-S001', shop_name: 'ร้านป้าพร อาหารตามสั่ง', category: 'อาหารตามสั่ง', owner_name: 'นางสมพร รักสงขลา', citizen_id: '1909800123456', phone: '081-234-5678', email_or_line: 'line:paporn_food', status: 'ACTIVE' },
+        { shop_id: 'SHP-002', shop_code: 'SKRU-S002', shop_name: 'ครัวปักษ์ใต้ นครศรีฯ', category: 'ข้าวราดแกง', owner_name: 'นายสุชาติ ทองดี', citizen_id: '1809900456789', phone: '089-876-5432', email_or_line: 'line:suchart_curry', status: 'ACTIVE' },
+        { shop_id: 'SHP-003', shop_code: 'SKRU-S003', shop_name: 'สดชื่นสมูทตี้ & ชานมไข่มุก', category: 'เครื่องดื่ม/กาแฟ', owner_name: 'นางสาวกานดา สดใส', citizen_id: '1900100789123', phone: '086-111-2233', email_or_line: 'kanda.drink@gmail.com', status: 'ACTIVE' },
+        { shop_id: 'SHP-004', shop_code: 'SKRU-S004', shop_name: 'บ้านขนมปังโฮมเมด FMS', category: 'เบเกอรี/ของว่าง', owner_name: 'นางสาวพิมพ์ชนก ใจดี', citizen_id: '1900200321654', phone: '092-333-4455', email_or_line: 'line:pim_bakery', status: 'ACTIVE' },
+        { shop_id: 'SHP-005', shop_code: 'SKRU-S005', shop_name: 'SKRU Aroma Coffee', category: 'เครื่องดื่ม/กาแฟ', owner_name: 'นายธนกฤต กาแฟหอม', citizen_id: '1909900987654', phone: '084-555-6677', email_or_line: 'thanakrit.cafe@gmail.com', status: 'ACTIVE' }
+      ],
+      contracts: [
+        { contract_id: 'CNT-001', contract_no: 'SKRU-69/001', shop_id: 'SHP-001', space_id: 'SPC-001', start_date: '2026-01-01', end_date: '2026-12-31', monthly_rent: 3500, deposit_amount: 7000, contract_file_url: 'https://drive.google.com/file/d/mock-contract-001/view', status: 'ACTIVE', note: 'สัญญาเช่ารายปี โรงอาหารกลาง' },
+        { contract_id: 'CNT-002', contract_no: 'SKRU-69/002', shop_id: 'SHP-002', space_id: 'SPC-002', start_date: '2025-11-01', end_date: '2026-10-28', monthly_rent: 3500, deposit_amount: 7000, contract_file_url: 'https://drive.google.com/file/d/mock-contract-002/view', status: 'ACTIVE', note: 'ใกล้หมดสัญญาภายในเดือนตุลาคม 2026' },
+        { contract_id: 'CNT-003', contract_no: 'SKRU-69/003', shop_id: 'SHP-003', space_id: 'SPC-004', start_date: '2025-11-05', end_date: '2026-11-04', monthly_rent: 2800, deposit_amount: 5600, contract_file_url: 'https://drive.google.com/file/d/mock-contract-003/view', status: 'ACTIVE', note: 'ใกล้หมดสัญญา ต้องแจ้งผู้เช่าล่วงหน้า' },
+        { contract_id: 'CNT-004', contract_no: 'SKRU-69/004', shop_id: 'SHP-004', space_id: 'SPC-005', start_date: '2025-10-01', end_date: '2026-09-30', monthly_rent: 3000, deposit_amount: 6000, contract_file_url: 'https://drive.google.com/file/d/mock-contract-004/view', status: 'ACTIVE', note: 'เลยกำหนดวันสิ้นสุดสัญญา รอดำเนินการต่อสัญญา' },
+        { contract_id: 'CNT-005', contract_no: 'SKRU-69/005', shop_id: 'SHP-005', space_id: 'SPC-007', start_date: '2026-06-01', end_date: '2027-05-31', monthly_rent: 5500, deposit_amount: 15000, contract_file_url: 'https://drive.google.com/file/d/mock-contract-005/view', status: 'ACTIVE', note: 'สัญญาร้านกาแฟสด อาคารเรียนรวม' }
+      ],
+      billings: [
+        { billing_id: 'BIL-202610-001', invoice_no: 'INV-6910-001', billing_month: '2026-10', contract_id: 'CNT-001', shop_id: 'SHP-001', space_id: 'SPC-001', rent_amount: 3500, water_prev: 225, water_curr: 240, water_units: 15, water_rate: 15, water_amount: 225, elec_prev: 1400, elec_curr: 1520, elec_units: 120, elec_rate: 5, elec_amount: 600, other_fee: 150, discount: 0, total_amount: 4475, payment_status: 'PAID', paid_date: '2026-10-05', receipt_no: 'RC-SKRU-691001', slip_file_url: 'https://drive.google.com/file/d/mock-slip-001/view' },
+        { billing_id: 'BIL-202610-002', invoice_no: 'INV-6910-002', billing_month: '2026-10', contract_id: 'CNT-002', shop_id: 'SHP-002', space_id: 'SPC-002', rent_amount: 3500, water_prev: 290, water_curr: 310, water_units: 20, water_rate: 15, water_amount: 300, elec_prev: 1750, elec_curr: 1890, elec_units: 140, elec_rate: 5, elec_amount: 700, other_fee: 150, discount: 0, total_amount: 4650, payment_status: 'PENDING', paid_date: '', receipt_no: '', slip_file_url: '' },
+        { billing_id: 'BIL-202610-003', invoice_no: 'INV-6910-003', billing_month: '2026-10', contract_id: 'CNT-003', shop_id: 'SHP-003', space_id: 'SPC-004', rent_amount: 2800, water_prev: 392, water_curr: 410, water_units: 18, water_rate: 15, water_amount: 270, elec_prev: 2010, elec_curr: 2150, elec_units: 140, elec_rate: 5, elec_amount: 700, other_fee: 150, discount: 0, total_amount: 3920, payment_status: 'PAID', paid_date: '2026-10-08', receipt_no: 'RC-SKRU-691002', slip_file_url: 'https://drive.google.com/file/d/mock-slip-002/view' },
+        { billing_id: 'BIL-202610-004', invoice_no: 'INV-6910-004', billing_month: '2026-10', contract_id: 'CNT-005', shop_id: 'SHP-005', space_id: 'SPC-007', rent_amount: 5500, water_prev: 495, water_curr: 520, water_units: 25, water_rate: 15, water_amount: 375, elec_prev: 3980, elec_curr: 4300, elec_units: 320, elec_rate: 5, elec_amount: 1600, other_fee: 150, discount: 0, total_amount: 7625, payment_status: 'PENDING', paid_date: '', receipt_no: '', slip_file_url: '' }
+      ],
+      auditLogs: [
+        { log_id: 'LOG-001', timestamp: new Date().toISOString(), actor_email: 'admin.property@skru.ac.th', action_type: 'INIT_DB', module: 'SYSTEM', target_id: 'ALL', detail: 'เริ่มต้นโครงสร้างฐานข้อมูลระบบบริหารจัดการร้านค้า มรภ.สงขลา' }
+      ]
+    };
+
+    // Helper: ตรวจสอบว่าแอปกำลังรันอยู่บน Google Apps Script หรือ Standalone Browser
+    function isRunningOnGAS() {
+      return typeof google !== 'undefined' && google.script && google.script.run;
+    }
+
+    // Initialize Application Lifecycle
+    window.addEventListener('DOMContentLoaded', () => {
+      // เซตรอบเดือนปัจจุบันใน Input
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const monthInput = document.getElementById('selected-billing-month');
+      if (monthInput) monthInput.value = currentMonth;
+
+      // ตรวจสอบสถานะการล็อกอินใน SessionStorage
+      const savedUser = sessionStorage.getItem('skru_user');
+      if (savedUser) {
+        try {
+          appState.currentUser = JSON.parse(savedUser);
+          loadAppData();
+        } catch (e) {
+          showLoginScreen();
+        }
+      } else {
+        showLoginScreen();
+      }
+    });
+
+    // แสดงหน้า Login
+    function showLoginScreen() {
+      document.getElementById('login-container').classList.remove('hidden');
+      document.getElementById('app-container').classList.add('hidden');
+    }
+
+    // แสดงหน้า App หลัก
+    function showAppScreen() {
+      document.getElementById('login-container').classList.add('hidden');
+      document.getElementById('app-container').classList.remove('hidden');
+      updateHeaderUserProfile();
+    }
+
+    function openGoogleLoginModal() {
+      document.getElementById('google-login-modal').classList.remove('hidden');
+    }
+
+    function closeGoogleLoginModal() {
+      document.getElementById('google-login-modal').classList.add('hidden');
+    }
+
+    // ดำเนินการเข้าสู่ระบบด้วย Mock Account หรือ Custom Email
+    function selectMockAccount(email) {
+      processLoginWithEmail(email);
+    }
+
+    function handleCustomEmailLogin() {
+      const email = document.getElementById('custom-email-input').value.trim();
+      if (!email) {
+        showToast('กรุณาระบุอีเมล Google', 'warning');
+        return;
+      }
+      processLoginWithEmail(email);
+    }
+
+    function processLoginWithEmail(email) {
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler((user) => {
+            appState.currentUser = user;
+            sessionStorage.setItem('skru_user', JSON.stringify(user));
+            closeGoogleLoginModal();
+            showToast(`ยินดีต้อนรับ ${user.full_name}`, 'success');
+            loadAppData();
+          })
+          .withFailureHandler((err) => {
+            showToast(err.message || 'ไม่ได้รับอนุญาตเข้าใช้งานระบบ (Allowlist Check Failed)', 'error');
+          })
+          .loginWithGoogleMockup(email);
+      } else {
+        // Standalone Browser Simulation (ตรวจสอบกับ User Allowlist ใน Seed Data)
+        const matched = SEED_DATA.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!matched) {
+          showToast(`บัญชี Google (${email}) ไม่อยู่ในรายชื่อที่ได้รับอนุญาต (Allowlist Check Failed - AC-01.2)`, 'error');
+          return;
+        }
+        if (matched.status !== 'ACTIVE') {
+          showToast(`บัญชีผู้ใช้งาน (${email}) ถูกระงับสิทธิ์ชั่วคราว`, 'warning');
+          return;
+        }
+
+        appState.currentUser = matched;
+        sessionStorage.setItem('skru_user', JSON.stringify(matched));
+        closeGoogleLoginModal();
+        showToast(`เข้าสู่ระบบสำเร็จ: ${matched.full_name} (${matched.role})`, 'success');
+        loadAppData();
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('skru_user');
+      appState.currentUser = null;
+      showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
+      showLoginScreen();
+    }
+
+    function updateHeaderUserProfile() {
+      if (!appState.currentUser) return;
+      const u = appState.currentUser;
+      document.getElementById('header-user-name').innerText = u.full_name;
+      document.getElementById('header-user-email').innerText = u.email;
+      document.getElementById('header-user-role').innerText = u.role;
+      document.getElementById('header-user-avatar').innerText = u.full_name.charAt(0);
+      document.getElementById('header-user-avatar').style.backgroundColor = u.avatar_color || '#881337';
+      document.getElementById('header-user-avatar').style.color = '#ffffff';
+
+      // ซ่อน/แสดง เมนู Admin หากเป็น Staff
+      const isAdmin = u.role === 'ADMIN';
+      const addUserBtn = document.getElementById('btn-add-user');
+      if (addUserBtn) addUserBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+
+    // โหลดข้อมูลแอปพลิเคชันทั้งหมด
+    function loadAppData() {
+      showAppScreen();
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler((data) => {
+            appState.settings = data.settings || appState.settings;
+            appState.zones = data.zones || [];
+            appState.spaces = data.spaces || [];
+            appState.shops = data.shops || [];
+            appState.contracts = data.contracts || [];
+            appState.billings = data.billings || [];
+            appState.users = data.users || [];
+            appState.auditLogs = data.auditLogs || [];
+            document.getElementById('sync-timestamp').innerText = new Date().toLocaleTimeString('th-TH');
+            refreshAllUI();
+          })
+          .withFailureHandler((err) => {
+            showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลจากชีต: ' + err.message, 'error');
+            // Fallback to local seed
+            fallbackToSeedData();
+          })
+          .getInitialAppData(appState.currentUser.email);
+      } else {
+        fallbackToSeedData();
+      }
+    }
+
+    function fallbackToSeedData() {
+      appState.zones = SEED_DATA.zones;
+      appState.spaces = SEED_DATA.spaces;
+      appState.shops = SEED_DATA.shops;
+      appState.contracts = SEED_DATA.contracts;
+      appState.billings = SEED_DATA.billings;
+      appState.users = SEED_DATA.users;
+      appState.auditLogs = SEED_DATA.auditLogs;
+      document.getElementById('sync-timestamp').innerText = new Date().toLocaleTimeString('th-TH') + ' (Local Preview)';
+      refreshAllUI();
+    }
+
+    function refreshDataFromBackend() {
+      showToast('กำลังซิงค์ข้อมูลกับ Google Sheets...', 'info');
+      loadAppData();
+    }
+
+    function refreshAllUI() {
+      renderDashboard();
+      renderSpacesList();
+      renderShopsList();
+      renderContractsList();
+      renderBillingsList();
+      renderUsersList();
+      renderSettingsAndLogs();
+      populateDropdowns();
+    }
+
+    // สลับหน้าแท็บ
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'spaces', 'shops', 'contracts', 'billings', 'users', 'settings'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (sec && btn) {
+          if (t === tabId) {
+            sec.classList.remove('hidden');
+            btn.classList.add('bg-skru-red', 'text-white', 'shadow');
+            btn.classList.remove('text-rose-200', 'hover:bg-rose-900/40');
+          } else {
+            sec.classList.add('hidden');
+            btn.classList.remove('bg-skru-red', 'text-white', 'shadow');
+            btn.classList.add('text-rose-200', 'hover:bg-rose-900/40');
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 1. Dashboard Logic
+    // =========================================================================
+    function renderDashboard() {
+      const totalSpaces = appState.spaces.length;
+      const occupiedSpaces = appState.spaces.filter(s => s.status === 'OCCUPIED').length;
+      const availableSpaces = appState.spaces.filter(s => s.status === 'AVAILABLE').length;
+      const maintSpaces = appState.spaces.filter(s => s.status === 'MAINTENANCE').length;
+
+      document.getElementById('stat-total-spaces').innerText = totalSpaces;
+      document.getElementById('stat-occupied-spaces').innerText = occupiedSpaces;
+      document.getElementById('stat-available-spaces').innerText = availableSpaces;
+      document.getElementById('stat-maint-spaces').innerText = maintSpaces;
+
+      const activeContracts = appState.contracts.filter(c => c.status === 'ACTIVE').length;
+      document.getElementById('stat-active-contracts').innerText = activeContracts;
+      document.getElementById('stat-total-shops').innerText = appState.shops.length;
+
+      // คำนวณสัญญาใกล้หมดอายุ
+      const today = new Date();
+      let expiringCount = 0;
+      let expiredCount = 0;
+      const expiringList = [];
+
+      appState.contracts.forEach(c => {
+        if (c.status !== 'ACTIVE') return;
+        const endDate = new Date(c.end_date);
+        const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 30) {
+          if (diffDays < 0) expiredCount++;
+          else expiringCount++;
+
+          const shop = appState.shops.find(s => s.shop_id === c.shop_id) || {};
+          const space = appState.spaces.find(sp => sp.space_id === c.space_id) || {};
+          expiringList.push({ ...c, shop_name: shop.shop_name, space_code: space.space_code, diffDays });
+        }
+      });
+
+      document.getElementById('stat-expiring-contracts').innerText = expiringCount;
+      document.getElementById('stat-expired-contracts').innerText = expiredCount;
+
+      const badge = document.getElementById('badge-contract-alert');
+      const totalAlerts = expiringCount + expiredCount;
+      if (totalAlerts > 0) {
+        badge.innerText = totalAlerts;
+        badge.classList.remove('hidden');
+        document.getElementById('dashboard-expiry-banner').classList.remove('hidden');
+        document.getElementById('dashboard-expiry-desc').innerText = `พบสัญญาเช่าที่ต้องดำเนินการต่อสัญญาหรือพิจารณาพื้นที่ ${totalAlerts} รายการ (หมดอายุแล้ว ${expiredCount} ฉบับ / ใกล้หมดอายุ ${expiringCount} ฉบับ)`;
+      } else {
+        badge.classList.add('hidden');
+        document.getElementById('dashboard-expiry-banner').classList.add('hidden');
+      }
+
+      // ตารางแดชบอร์ด
+      const tableExp = document.getElementById('table-dashboard-expiring');
+      if (expiringList.length === 0) {
+        tableExp.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">ไม่มีสัญญาที่ใกล้หมดอายุในระยะนี้ สัญญาทุกฉบับมีสถานะปกติ</td></tr>`;
+      } else {
+        tableExp.innerHTML = expiringList.map(item => {
+          const badgeClass = item.diffDays < 0
+            ? 'bg-rose-100 text-rose-700 border-rose-300'
+            : 'bg-amber-100 text-amber-800 border-amber-300';
+          const badgeText = item.diffDays < 0
+            ? `เกินกำหนด ${Math.abs(item.diffDays)} วัน`
+            : `เหลือ ${item.diffDays} วัน`;
+
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-mono font-semibold text-slate-800">${item.contract_no}</td>
+              <td class="p-3 font-semibold text-slate-800">${item.shop_name || '-'}</td>
+              <td class="p-3 font-mono font-bold text-skru-red">${item.space_code || '-'}</td>
+              <td class="p-3 font-mono">${item.end_date}</td>
+              <td class="p-3 text-center">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">${badgeText}</span>
+              </td>
+              <td class="p-3 text-right">
+                <button onclick="prepareRenewContract('${item.contract_id}')" class="px-2.5 py-1 bg-skru-red hover:bg-rose-800 text-white rounded text-[11px] font-semibold">
+                  ต่อสัญญา
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // ยอดประจำเดือน
+      const currentMonth = document.getElementById('selected-billing-month')?.value || '2026-10';
+      const monthBills = appState.billings.filter(b => b.billing_month === currentMonth);
+      const totalMonth = monthBills.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+      const paidMonth = monthBills.filter(b => b.payment_status === 'PAID').reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+      const pendingMonth = totalMonth - paidMonth;
+
+      document.getElementById('stat-monthly-total').innerText = totalMonth.toLocaleString();
+      document.getElementById('stat-monthly-paid').innerText = paidMonth.toLocaleString() + ' บ.';
+      document.getElementById('stat-monthly-pending').innerText = pendingMonth.toLocaleString() + ' บ.';
+
+      // Zone Breakdown
+      const zoneContainer = document.getElementById('dashboard-zone-breakdown');
+      zoneContainer.innerHTML = appState.zones.map(z => {
+        const zoneSpaces = appState.spaces.filter(s => s.zone_id === z.zone_id);
+        const total = zoneSpaces.length;
+        const occupied = zoneSpaces.filter(s => s.status === 'OCCUPIED').length;
+        const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+        return `
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-semibold text-slate-700">${z.zone_name}</span>
+              <span class="text-slate-500 font-mono">${occupied}/${total} ล็อก (${percent}%)</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div class="bg-gradient-to-r from-skru-red to-skru-gold h-2 rounded-full" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 2. Spaces & Zones Logic
+    // =========================================================================
+    function renderSpacesList() {
+      const zoneFilter = document.getElementById('filter-space-zone').value;
+      const statusFilter = document.getElementById('filter-space-status').value;
+      const keyword = (document.getElementById('search-space-keyword').value || '').trim().toLowerCase();
+
+      const container = document.getElementById('spaces-grid-container');
+      const filtered = appState.spaces.filter(s => {
+        if (zoneFilter !== 'ALL' && s.zone_id !== zoneFilter) return false;
+        if (statusFilter !== 'ALL' && s.status !== statusFilter) return false;
+        if (keyword && !s.space_code.toLowerCase().includes(keyword) && !s.space_name.toLowerCase().includes(keyword)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full p-8 text-center bg-white rounded-2xl border text-slate-400">ไม่พบล็อกพื้นที่ตรงตามเงื่อนไขที่ค้นหา</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const zone = appState.zones.find(z => z.zone_id === s.zone_id) || {};
+        let statusBadge = '';
+        if (s.status === 'AVAILABLE') statusBadge = '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded-full text-[10px]">ว่างพร้อมเช่า</span>';
+        else if (s.status === 'OCCUPIED') statusBadge = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">มีผู้เช่าแล้ว</span>';
+        else statusBadge = '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-bold rounded-full text-[10px]">ปิดปรับปรุง</span>';
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow transition-shadow flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between mb-2">
+                <div>
+                  <span class="text-[10px] font-semibold text-slate-400 uppercase">${zone.zone_name || '-'}</span>
+                  <h3 class="font-heading font-bold text-lg text-slate-800 font-mono">${s.space_code}</h3>
+                </div>
+                ${statusBadge}
+              </div>
+              <p class="text-xs text-slate-600 font-medium mb-3">${s.space_name || 'ไม่มีชื่อเฉพาะ'}</p>
+
+              <div class="space-y-1.5 text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div class="flex justify-between">
+                  <span>ขนาดพื้นที่:</span>
+                  <span class="font-semibold text-slate-700">${s.size_sqm} ตร.ม.</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>ค่าเช่ามาตรฐาน:</span>
+                  <span class="font-semibold text-slate-700">${Number(s.standard_rent).toLocaleString()} บ./ด.</span>
+                </div>
+                <div class="flex justify-between text-[11px] pt-1 border-t">
+                  <span>มิเตอร์น้ำ (${s.water_meter_no || '-'}):</span>
+                  <span class="font-mono text-blue-600 font-bold">${s.last_water_reading || 0}</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span>มิเตอร์ไฟ (${s.elec_meter_no || '-'}):</span>
+                  <span class="font-mono text-amber-600 font-bold">${s.last_elec_reading || 0}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <button onclick="editSpace('${s.space_id}')" class="text-xs text-slate-600 hover:text-skru-red font-semibold">
+                <i class="fa-regular fa-pen-to-square"></i> แก้ไข
+              </button>
+              ${s.status === 'AVAILABLE' ? `
+                <button onclick="createContractForSpace('${s.space_id}')" class="px-2.5 py-1 bg-skru-red hover:bg-rose-800 text-white rounded text-[11px] font-semibold">
+                  + ทำสัญญา
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 3. Shops Logic
+    // =========================================================================
+    function renderShopsList() {
+      const keyword = (document.getElementById('search-shop-keyword').value || '').trim().toLowerCase();
+      const filtered = appState.shops.filter(s => {
+        if (!keyword) return true;
+        return (
+          s.shop_name.toLowerCase().includes(keyword) ||
+          s.owner_name.toLowerCase().includes(keyword) ||
+          String(s.citizen_id).includes(keyword) ||
+          String(s.phone).includes(keyword)
+        );
+      });
+
+      document.getElementById('shop-count-badge').innerText = `${filtered.length} รายการ`;
+      const tbody = document.getElementById('table-shops-body');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">ไม่พบข้อมูลร้านค้าที่ค้นหา</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        // ค้นหาสัญญาเช่าของร้าน
+        const contract = appState.contracts.find(c => c.shop_id === s.shop_id && c.status === 'ACTIVE');
+        let contractDisplay = '<span class="text-slate-400">ไม่มีสัญญา Active</span>';
+        if (contract) {
+          const space = appState.spaces.find(sp => sp.space_id === contract.space_id);
+          contractDisplay = `<span class="font-mono font-semibold text-slate-800">${contract.contract_no}</span> (ล็อก <strong class="text-skru-red">${space?.space_code || '-'}</strong>)`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono font-semibold text-slate-700">${s.shop_code}</td>
+            <td class="p-3">
+              <div class="font-bold text-slate-800">${s.shop_name}</div>
+              <span class="inline-block px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] mt-0.5">${s.category}</span>
+            </td>
+            <td class="p-3">
+              <div class="font-semibold text-slate-800">${s.owner_name}</div>
+              <div class="text-[11px] text-slate-400 font-mono">ปชช: ${s.citizen_id || '-'}</div>
+            </td>
+            <td class="p-3 font-mono">
+              <div class="text-slate-700"><i class="fa-solid fa-phone text-[10px] mr-1 text-slate-400"></i>${s.phone}</div>
+              <div class="text-[11px] text-slate-400">${s.email_or_line || '-'}</div>
+            </td>
+            <td class="p-3 text-xs">${contractDisplay}</td>
+            <td class="p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}">
+                ${s.status}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              <button onclick="editShop('${s.shop_id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold">
+                แก้ไข
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 4. Contracts Logic (BR-02, BR-03, BR-04)
+    // =========================================================================
+    function filterContractsByStatus(status) {
+      appState.contractStatusFilter = status;
+      ['all', 'expiring', 'expired', 'active', 'closed'].forEach(key => {
+        const btn = document.getElementById(`filter-contract-${key}`);
+        if (key.toUpperCase() === status) {
+          btn.className = 'px-3 py-1.5 bg-slate-800 text-white rounded-lg';
+        } else {
+          btn.className = 'px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg';
+        }
+      });
+      renderContractsList();
+    }
+
+    function renderContractsList() {
+      const today = new Date();
+      const filtered = appState.contracts.filter(c => {
+        const endDate = new Date(c.end_date);
+        const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+        if (appState.contractStatusFilter === 'EXPIRING') return c.status === 'ACTIVE' && diffDays >= 0 && diffDays <= 30;
+        if (appState.contractStatusFilter === 'EXPIRED') return c.status === 'ACTIVE' && diffDays < 0;
+        if (appState.contractStatusFilter === 'ACTIVE') return c.status === 'ACTIVE';
+        if (appState.contractStatusFilter === 'CLOSED') return c.status === 'CLOSED' || c.status === 'TERMINATED' || c.status === 'RENEWED';
+        return true;
+      });
+
+      const tbody = document.getElementById('table-contracts-body');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">ไม่พบสัญญาเช่าตามเงื่อนไขที่เลือก</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+        const shop = appState.shops.find(s => s.shop_id === c.shop_id) || {};
+        const space = appState.spaces.find(sp => sp.space_id === c.space_id) || {};
+        const endDate = new Date(c.end_date);
+        const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+        let statusBadge = '';
+        if (c.status !== 'ACTIVE') {
+          statusBadge = `<span class="px-2 py-0.5 bg-slate-200 text-slate-600 font-bold rounded-full text-[10px]">${c.status}</span>`;
+        } else if (diffDays < 0) {
+          statusBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 font-bold rounded-full text-[10px]">หมดอายุ (เกิน ${Math.abs(diffDays)} วัน)</span>`;
+        } else if (diffDays <= 30) {
+          statusBadge = `<span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded-full text-[10px]">ใกล้หมด (เหลือ ${diffDays} วัน)</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">ปกติ (เหลือ ${diffDays} วัน)</span>`;
+        }
+
+        const fileLink = c.contract_file_url
+          ? `<a href="${c.contract_file_url}" target="_blank" class="text-skru-red hover:underline font-semibold"><i class="fa-solid fa-file-pdf mr-1"></i>ดูไฟล์สัญญา</a>`
+          : '<span class="text-slate-400">-</span>';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono font-bold text-slate-800">${c.contract_no}</td>
+            <td class="p-3">
+              <div class="font-bold text-slate-800">${shop.shop_name || '-'}</div>
+              <div class="text-[11px] text-slate-500">${shop.owner_name || ''}</div>
+            </td>
+            <td class="p-3">
+              <span class="font-mono font-bold text-skru-red">${space.space_code || '-'}</span>
+              <div class="text-[11px] text-slate-400">${space.space_name || ''}</div>
+            </td>
+            <td class="p-3 font-mono text-[11px]">
+              <div>เริ่ม: ${c.start_date}</div>
+              <div>สิ้นสุด: <strong class="text-slate-700">${c.end_date}</strong></div>
+            </td>
+            <td class="p-3 text-right font-mono font-semibold">${Number(c.monthly_rent).toLocaleString()}</td>
+            <td class="p-3 text-center">${statusBadge}</td>
+            <td class="p-3 text-center text-xs">${fileLink}</td>
+            <td class="p-3 text-right space-x-1">
+              ${c.status === 'ACTIVE' ? `
+                <button onclick="prepareRenewContract('${c.contract_id}')" class="px-2 py-1 bg-skru-red hover:bg-rose-800 text-white rounded text-[10px] font-semibold">
+                  ต่อสัญญา
+                </button>
+                <button onclick="terminateContract('${c.contract_id}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[10px]">
+                  ปิดสัญญา
+                </button>
+              ` : '<span class="text-slate-400 text-[10px]">ปิดแล้ว</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 5. Billings & Utilities Logic (BR-05, BR-06)
+    // =========================================================================
+    function renderBillingsList() {
+      const selectedMonth = document.getElementById('selected-billing-month').value;
+      const filtered = appState.billings.filter(b => b.billing_month === selectedMonth);
+      const tbody = document.getElementById('table-billings-body');
+
+      let total = 0;
+      let paid = 0;
+      let pending = 0;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">ยังไม่มีรายการเรียกเก็บในรอบเดือน ${selectedMonth} (กดปุ่ม "+ จดมิเตอร์/ออกใบแจ้งยอด" เพื่อบันทึก)</td></tr>`;
+      } else {
+        tbody.innerHTML = filtered.map(b => {
+          total += Number(b.total_amount || 0);
+          if (b.payment_status === 'PAID') paid += Number(b.total_amount || 0);
+          else pending += Number(b.total_amount || 0);
+
+          const shop = appState.shops.find(s => s.shop_id === b.shop_id) || {};
+          const space = appState.spaces.find(sp => sp.space_id === b.space_id) || {};
+
+          let statusBadge = '';
+          if (b.payment_status === 'PAID') {
+            statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-check mr-1"></i>ชำระแล้ว</span>`;
+          } else {
+            statusBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-800 font-bold rounded-full text-[10px]"><i class="fa-solid fa-clock mr-1"></i>รอชำระ</span>`;
+          }
+
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-mono font-bold text-slate-800">${b.invoice_no}</td>
+              <td class="p-3">
+                <div class="font-bold text-slate-800">${shop.shop_name || '-'}</div>
+                <div class="text-[11px] text-skru-red font-mono font-semibold">ล็อก ${space.space_code || '-'}</div>
+              </td>
+              <td class="p-3 text-right font-mono">${Number(b.rent_amount).toLocaleString()}</td>
+              <td class="p-3 text-center font-mono">
+                <span class="text-blue-700 font-bold">${b.water_units}</span>
+                <span class="text-[10px] text-slate-400 block">${b.water_prev} &rarr; ${b.water_curr}</span>
+              </td>
+              <td class="p-3 text-center font-mono">
+                <span class="text-amber-700 font-bold">${b.elec_units}</span>
+                <span class="text-[10px] text-slate-400 block">${b.elec_prev} &rarr; ${b.elec_curr}</span>
+              </td>
+              <td class="p-3 text-right font-mono font-bold text-slate-900">${Number(b.total_amount).toLocaleString()}</td>
+              <td class="p-3 text-center">${statusBadge}</td>
+              <td class="p-3 text-right space-x-1">
+                ${b.payment_status !== 'PAID' ? `
+                  <button onclick="openPaymentModal('${b.billing_id}')" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-semibold">
+                    รับชำระ
+                  </button>
+                ` : `
+                  <span class="text-[10px] text-slate-400 font-mono block">RC: ${b.receipt_no || '-'}</span>
+                `}
+                <button onclick="openPrintInvoiceModal('${b.billing_id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]">
+                  <i class="fa-solid fa-print"></i> พิมพ์
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('billing-summary-total').innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+      document.getElementById('billing-summary-paid').innerText = paid.toLocaleString(undefined, { minimumFractionDigits: 2 });
+      document.getElementById('billing-summary-pending').innerText = pending.toLocaleString(undefined, { minimumFractionDigits: 2 });
+    }
+
+    // =========================================================================
+    // 6. Users & Allowlist Logic
+    // =========================================================================
+    function renderUsersList() {
+      const tbody = document.getElementById('table-users-body');
+      tbody.innerHTML = appState.users.map(u => {
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs" style="background-color: ${u.avatar_color || '#881337'}">
+                  ${u.full_name.charAt(0)}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-800">${u.full_name}</div>
+                  <div class="text-[10px] text-slate-400 font-mono">${u.user_id}</div>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 font-mono text-slate-700">${u.email}</td>
+            <td class="p-3 text-slate-600">${u.department || '-'}</td>
+            <td class="p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'ADMIN' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}">
+                ${u.role}
+              </span>
+            </td>
+            <td class="p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                ${u.status}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              ${appState.currentUser?.role === 'ADMIN' ? `
+                <button onclick="toggleUserStatus('${u.user_id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]">
+                  ${u.status === 'ACTIVE' ? 'ระงับ' : 'เปิดใช้งาน'}
+                </button>
+              ` : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 7. Settings & Audit Logs
+    // =========================================================================
+    function renderSettingsAndLogs() {
+      document.getElementById('setting-water-rate').value = appState.settings.WATER_RATE || 15;
+      document.getElementById('setting-electric-rate').value = appState.settings.ELECTRIC_RATE || 5;
+      document.getElementById('setting-garbage-fee').value = appState.settings.GARBAGE_FEE_DEFAULT || 150;
+      document.getElementById('setting-warning-days').value = appState.settings.EXPIRY_WARNING_DAYS || 30;
+
+      const tbody = document.getElementById('table-audit-logs');
+      tbody.innerHTML = appState.auditLogs.map(l => {
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 text-slate-400 whitespace-nowrap">${new Date(l.timestamp).toLocaleString('th-TH')}</td>
+            <td class="p-2 font-semibold text-slate-700">${l.actor_email}</td>
+            <td class="p-2"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-800 rounded font-bold">${l.action_type}</span></td>
+            <td class="p-2 text-slate-600">${l.detail}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function saveSystemSettingsFromUI() {
+      if (appState.currentUser?.role !== 'ADMIN') {
+        showToast('คำสั่งนี้จำกัดเฉพาะผู้ดูแลระบบระดับ ADMIN เท่านั้น', 'warning');
+        return;
+      }
+      const newSettings = {
+        WATER_RATE: document.getElementById('setting-water-rate').value,
+        ELECTRIC_RATE: document.getElementById('setting-electric-rate').value,
+        GARBAGE_FEE_DEFAULT: document.getElementById('setting-garbage-fee').value,
+        EXPIRY_WARNING_DAYS: document.getElementById('setting-warning-days').value
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกการตั้งค่าลง Google Sheets เรียบร้อยแล้ว', 'success');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveSystemSettings(newSettings, appState.currentUser.email);
+      } else {
+        appState.settings = { ...appState.settings, ...newSettings };
+        showToast('บันทึกการตั้งค่าเรียบร้อยแล้ว (Local Mode)', 'success');
+        refreshAllUI();
+      }
+    }
+
+    // =========================================================================
+    // Modals & Action Handlers
+    // =========================================================================
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function populateDropdowns() {
+      // Zone Dropdown in Spaces Filter & Modal
+      const filterZone = document.getElementById('filter-space-zone');
+      const formZone = document.getElementById('form-space-zone');
+      const zoneOpts = appState.zones.map(z => `<option value="${z.zone_id}">${z.zone_name}</option>`).join('');
+
+      filterZone.innerHTML = '<option value="ALL">-- ทุกโซนใน มรภ.สงขลา --</option>' + zoneOpts;
+      formZone.innerHTML = zoneOpts;
+
+      // Shops and Spaces in Contract Modal
+      const shopSelect = document.getElementById('form-contract-shop');
+      shopSelect.innerHTML = appState.shops.map(s => `<option value="${s.shop_id}">${s.shop_name} (${s.owner_name})</option>`).join('');
+
+      const spaceSelect = document.getElementById('form-contract-space');
+      spaceSelect.innerHTML = appState.spaces.map(sp => `<option value="${sp.space_id}">${sp.space_code} - ${sp.space_name} (${sp.status})</option>`).join('');
+
+      // Contracts in Billing Modal
+      const contractSelect = document.getElementById('form-billing-contract');
+      const activeContracts = appState.contracts.filter(c => c.status === 'ACTIVE');
+      contractSelect.innerHTML = activeContracts.map(c => {
+        const s = appState.shops.find(x => x.shop_id === c.shop_id);
+        const sp = appState.spaces.find(x => x.space_id === c.space_id);
+        return `<option value="${c.contract_id}">${c.contract_no} - ${s?.shop_name} (ล็อก ${sp?.space_code})</option>`;
+      }).join('');
+    }
+
+    // Space CRUD
+    function openModalAddSpace() {
+      document.getElementById('modal-space-title').innerText = 'เพิ่มล็อกพื้นที่ใหม่';
+      document.getElementById('form-space-id').value = '';
+      document.getElementById('form-space-code').value = '';
+      document.getElementById('form-space-name').value = '';
+      document.getElementById('form-space-size').value = 12;
+      document.getElementById('form-space-rent').value = 3500;
+      document.getElementById('form-space-water-meter').value = '';
+      document.getElementById('form-space-water-reading').value = 0;
+      document.getElementById('form-space-elec-meter').value = '';
+      document.getElementById('form-space-elec-reading').value = 0;
+      document.getElementById('form-space-status').value = 'AVAILABLE';
+      document.getElementById('modal-space').classList.remove('hidden');
+    }
+
+    function editSpace(spaceId) {
+      const s = appState.spaces.find(x => x.space_id === spaceId);
+      if (!s) return;
+      document.getElementById('modal-space-title').innerText = 'แก้ไขล็อกพื้นที่ ' + s.space_code;
+      document.getElementById('form-space-id').value = s.space_id;
+      document.getElementById('form-space-code').value = s.space_code;
+      document.getElementById('form-space-zone').value = s.zone_id;
+      document.getElementById('form-space-name').value = s.space_name;
+      document.getElementById('form-space-size').value = s.size_sqm;
+      document.getElementById('form-space-rent').value = s.standard_rent;
+      document.getElementById('form-space-water-meter').value = s.water_meter_no;
+      document.getElementById('form-space-water-reading').value = s.last_water_reading;
+      document.getElementById('form-space-elec-meter').value = s.elec_meter_no;
+      document.getElementById('form-space-elec-reading').value = s.last_elec_reading;
+      document.getElementById('form-space-status').value = s.status;
+      document.getElementById('modal-space').classList.remove('hidden');
+    }
+
+    function handleSaveSpace(e) {
+      e.preventDefault();
+      const payload = {
+        space_id: document.getElementById('form-space-id').value,
+        space_code: document.getElementById('form-space-code').value,
+        zone_id: document.getElementById('form-space-zone').value,
+        space_name: document.getElementById('form-space-name').value,
+        size_sqm: Number(document.getElementById('form-space-size').value),
+        standard_rent: Number(document.getElementById('form-space-rent').value),
+        water_meter_no: document.getElementById('form-space-water-meter').value,
+        last_water_reading: Number(document.getElementById('form-space-water-reading').value),
+        elec_meter_no: document.getElementById('form-space-elec-meter').value,
+        last_elec_reading: Number(document.getElementById('form-space-elec-reading').value),
+        status: document.getElementById('form-space-status').value
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกล็อกพื้นที่ลงชีตเรียบร้อยแล้ว', 'success');
+            closeModal('modal-space');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveSpace(payload, appState.currentUser.email);
+      } else {
+        const idx = appState.spaces.findIndex(x => x.space_id === payload.space_id);
+        if (idx >= 0) appState.spaces[idx] = payload;
+        else appState.spaces.push({ ...payload, space_id: 'SPC-' + Date.now().toString().slice(-4) });
+        showToast('บันทึกล็อกพื้นที่เรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-space');
+        refreshAllUI();
+      }
+    }
+
+    // Shop CRUD
+    function openModalAddShop() {
+      document.getElementById('modal-shop-title').innerText = 'ลงทะเบียนร้านค้าใหม่';
+      document.getElementById('form-shop-id').value = '';
+      document.getElementById('form-shop-name').value = '';
+      document.getElementById('form-shop-owner').value = '';
+      document.getElementById('form-shop-citizen').value = '';
+      document.getElementById('form-shop-phone').value = '';
+      document.getElementById('form-shop-line').value = '';
+      document.getElementById('form-shop-status').value = 'ACTIVE';
+      document.getElementById('modal-shop').classList.remove('hidden');
+    }
+
+    function editShop(shopId) {
+      const s = appState.shops.find(x => x.shop_id === shopId);
+      if (!s) return;
+      document.getElementById('modal-shop-title').innerText = 'แก้ไขข้อมูลร้านค้า: ' + s.shop_name;
+      document.getElementById('form-shop-id').value = s.shop_id;
+      document.getElementById('form-shop-name').value = s.shop_name;
+      document.getElementById('form-shop-category').value = s.category;
+      document.getElementById('form-shop-owner').value = s.owner_name;
+      document.getElementById('form-shop-citizen').value = s.citizen_id;
+      document.getElementById('form-shop-phone').value = s.phone;
+      document.getElementById('form-shop-line').value = s.email_or_line;
+      document.getElementById('form-shop-status').value = s.status;
+      document.getElementById('modal-shop').classList.remove('hidden');
+    }
+
+    function handleSaveShop(e) {
+      e.preventDefault();
+      const payload = {
+        shop_id: document.getElementById('form-shop-id').value,
+        shop_name: document.getElementById('form-shop-name').value,
+        category: document.getElementById('form-shop-category').value,
+        owner_name: document.getElementById('form-shop-owner').value,
+        citizen_id: document.getElementById('form-shop-citizen').value,
+        phone: document.getElementById('form-shop-phone').value,
+        email_or_line: document.getElementById('form-shop-line').value,
+        status: document.getElementById('form-shop-status').value
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกร้านค้าลงชีตเรียบร้อยแล้ว', 'success');
+            closeModal('modal-shop');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveShop(payload, appState.currentUser.email);
+      } else {
+        const idx = appState.shops.findIndex(x => x.shop_id === payload.shop_id);
+        if (idx >= 0) appState.shops[idx] = payload;
+        else appState.shops.push({ ...payload, shop_id: 'SHP-' + Date.now().toString().slice(-4), shop_code: 'SKRU-S' + Date.now().toString().slice(-3) });
+        showToast('บันทึกร้านค้าเรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-shop');
+        refreshAllUI();
+      }
+    }
+
+    // Contract Actions
+    function openModalAddContract() {
+      document.getElementById('modal-contract-title').innerText = 'ทำสัญญาเช่าพื้นที่ใหม่';
+      document.getElementById('form-contract-id').value = '';
+      document.getElementById('form-contract-renew-from').value = '';
+      document.getElementById('form-contract-start').value = new Date().toISOString().split('T')[0];
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      document.getElementById('form-contract-end').value = nextYear.toISOString().split('T')[0];
+      autoFillContractRent();
+      document.getElementById('modal-contract').classList.remove('hidden');
+    }
+
+    function createContractForSpace(spaceId) {
+      openModalAddContract();
+      document.getElementById('form-contract-space').value = spaceId;
+      autoFillContractRent();
+    }
+
+    function prepareRenewContract(contractId) {
+      const c = appState.contracts.find(x => x.contract_id === contractId);
+      if (!c) return;
+      openModalAddContract();
+      document.getElementById('modal-contract-title').innerText = 'ต่อสัญญาเช่า (จากเดิม ' + c.contract_no + ')';
+      document.getElementById('form-contract-renew-from').value = c.contract_id;
+      document.getElementById('form-contract-shop').value = c.shop_id;
+      document.getElementById('form-contract-space').value = c.space_id;
+      document.getElementById('form-contract-rent').value = c.monthly_rent;
+      document.getElementById('form-contract-deposit').value = c.deposit_amount;
+
+      // วันเริ่มสัญญาใหม่ = วันถัดจากวันสิ้นสุดสัญญาเดิม
+      const oldEnd = new Date(c.end_date);
+      oldEnd.setDate(oldEnd.getDate() + 1);
+      const newStart = oldEnd.toISOString().split('T')[0];
+      oldEnd.setFullYear(oldEnd.getFullYear() + 1);
+      const newEnd = oldEnd.toISOString().split('T')[0];
+
+      document.getElementById('form-contract-start').value = newStart;
+      document.getElementById('form-contract-end').value = newEnd;
+    }
+
+    function autoFillContractRent() {
+      const spaceId = document.getElementById('form-contract-space').value;
+      const space = appState.spaces.find(s => s.space_id === spaceId);
+      if (space) {
+        document.getElementById('form-contract-rent').value = space.standard_rent;
+        document.getElementById('form-contract-deposit').value = space.standard_rent * 2;
+      }
+    }
+
+    function handleSaveContract(e) {
+      e.preventDefault();
+      const payload = {
+        contract_id: document.getElementById('form-contract-id').value,
+        renew_from_contract_id: document.getElementById('form-contract-renew-from').value,
+        shop_id: document.getElementById('form-contract-shop').value,
+        space_id: document.getElementById('form-contract-space').value,
+        start_date: document.getElementById('form-contract-start').value,
+        end_date: document.getElementById('form-contract-end').value,
+        monthly_rent: Number(document.getElementById('form-contract-rent').value),
+        deposit_amount: Number(document.getElementById('form-contract-deposit').value),
+        note: document.getElementById('form-contract-note').value,
+        status: 'ACTIVE'
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกสัญญาเช่าลงชีตเรียบร้อยแล้ว', 'success');
+            closeModal('modal-contract');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveContract(payload, appState.currentUser.email);
+      } else {
+        // Local simulation: BR-02 check
+        const conflict = appState.contracts.find(c => c.space_id === payload.space_id && c.status === 'ACTIVE' && c.contract_id !== payload.renew_from_contract_id);
+        if (conflict && !payload.renew_from_contract_id) {
+          showToast(`ล็อกพื้นที่นี้มีสัญญาเช่าที่ยังใช้งานอยู่ (${conflict.contract_no}) ห้ามทำสัญญาซ้ำซ้อน (BR-02)`, 'error');
+          return;
+        }
+
+        if (payload.renew_from_contract_id) {
+          const old = appState.contracts.find(c => c.contract_id === payload.renew_from_contract_id);
+          if (old) old.status = 'RENEWED';
+        }
+
+        const newC = { ...payload, contract_id: 'CNT-' + Date.now().toString().slice(-4), contract_no: 'SKRU-69/' + Date.now().toString().slice(-3) };
+        appState.contracts.push(newC);
+
+        // BR-04: เปลี่ยนสถานะล็อกเป็น OCCUPIED
+        const sp = appState.spaces.find(x => x.space_id === payload.space_id);
+        if (sp) sp.status = 'OCCUPIED';
+
+        showToast('บันทึกสัญญาเช่าเรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-contract');
+        refreshAllUI();
+      }
+    }
+
+    function terminateContract(contractId) {
+      if (!confirm('ยืนยันการปิด/ยกเลิกสัญญาเช่านี้หรือไม่? สถานะล็อกพื้นที่จะกลับเป็น "ว่างพร้อมเช่า" ทันที (BR-04)')) return;
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('ปิดสัญญาเช่าและคืนสถานะล็อกเรียบร้อยแล้ว', 'success');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .updateContractStatus(contractId, 'CLOSED', 'ปิดสัญญาตามคำร้องขอ', appState.currentUser.email);
+      } else {
+        const c = appState.contracts.find(x => x.contract_id === contractId);
+        if (c) {
+          c.status = 'CLOSED';
+          const sp = appState.spaces.find(x => x.space_id === c.space_id);
+          if (sp) sp.status = 'AVAILABLE';
+        }
+        showToast('ปิดสัญญาเช่าเรียบร้อยแล้ว (Local Mode)', 'success');
+        refreshAllUI();
+      }
+    }
+
+    function triggerExpiryAlerts() {
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            showToast(`ตรวจสอบพบ ${res.alertCount} รายการ (ส่งอีเมล: ${res.mailSent ? 'สำเร็จ' : 'บันทึกในระบบ'})`, 'info');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .sendContractExpiryAlerts(appState.currentUser.email);
+      } else {
+        showToast('จำลองการตรวจสอบสัญญาใกล้หมดอายุและแจ้งเตือนสำเร็จ (Local Mode)', 'success');
+      }
+    }
+
+    // Billing Actions (BR-05)
+    function openModalAddBilling() {
+      const selectedMonth = document.getElementById('selected-billing-month').value;
+      document.getElementById('form-billing-month').value = selectedMonth;
+      document.getElementById('form-billing-id').value = '';
+      autoFillBillingFromContract();
+      document.getElementById('modal-billing').classList.remove('hidden');
+    }
+
+    function autoFillBillingFromContract() {
+      const contractId = document.getElementById('form-billing-contract').value;
+      const contract = appState.contracts.find(c => c.contract_id === contractId);
+      if (!contract) return;
+
+      const space = appState.spaces.find(s => s.space_id === contract.space_id);
+      document.getElementById('form-billing-rent').value = contract.monthly_rent;
+      document.getElementById('form-billing-water-prev').value = space ? (space.last_water_reading || 0) : 0;
+      document.getElementById('form-billing-water-curr').value = space ? (space.last_water_reading || 0) : 0;
+      document.getElementById('form-billing-elec-prev').value = space ? (space.last_elec_reading || 0) : 0;
+      document.getElementById('form-billing-elec-curr').value = space ? (space.last_elec_reading || 0) : 0;
+
+      document.getElementById('label-water-rate').innerText = appState.settings.WATER_RATE || 15;
+      document.getElementById('label-elec-rate').innerText = appState.settings.ELECTRIC_RATE || 5;
+
+      calculateBillingTotals();
+    }
+
+    function calculateBillingTotals() {
+      const isReset = document.getElementById('form-billing-meter-reset').checked;
+      const wPrev = Number(document.getElementById('form-billing-water-prev').value || 0);
+      const wCurr = Number(document.getElementById('form-billing-water-curr').value || 0);
+      const ePrev = Number(document.getElementById('form-billing-elec-prev').value || 0);
+      const eCurr = Number(document.getElementById('form-billing-elec-curr').value || 0);
+
+      const wUnits = isReset ? wCurr : Math.max(0, wCurr - wPrev);
+      const eUnits = isReset ? eCurr : Math.max(0, eCurr - ePrev);
+
+      const wRate = Number(appState.settings.WATER_RATE || 15);
+      const eRate = Number(appState.settings.ELECTRIC_RATE || 5);
+      const wAmount = wUnits * wRate;
+      const eAmount = eUnits * eRate;
+
+      document.getElementById('label-water-calc').innerText = `${wUnits} หน่วย = ${wAmount.toFixed(2)} บาท`;
+      document.getElementById('label-elec-calc').innerText = `${eUnits} หน่วย = ${eAmount.toFixed(2)} บาท`;
+
+      const rent = Number(document.getElementById('form-billing-rent').value || 0);
+      const other = Number(document.getElementById('form-billing-other').value || 0);
+      const discount = Number(document.getElementById('form-billing-discount').value || 0);
+
+      const total = rent + wAmount + eAmount + other - discount;
+      document.getElementById('form-billing-total-display').innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2 });
+    }
+
+    function handleSaveBilling(e) {
+      e.preventDefault();
+      const contractId = document.getElementById('form-billing-contract').value;
+      const contract = appState.contracts.find(c => c.contract_id === contractId);
+      const month = document.getElementById('form-billing-month').value;
+
+      const payload = {
+        billing_id: document.getElementById('form-billing-id').value,
+        billing_month: month,
+        contract_id: contractId,
+        shop_id: contract.shop_id,
+        space_id: contract.space_id,
+        rent_amount: Number(document.getElementById('form-billing-rent').value),
+        water_prev: Number(document.getElementById('form-billing-water-prev').value),
+        water_curr: Number(document.getElementById('form-billing-water-curr').value),
+        elec_prev: Number(document.getElementById('form-billing-elec-prev').value),
+        elec_curr: Number(document.getElementById('form-billing-elec-curr').value),
+        water_rate: Number(appState.settings.WATER_RATE || 15),
+        elec_rate: Number(appState.settings.ELECTRIC_RATE || 5),
+        other_fee: Number(document.getElementById('form-billing-other').value),
+        discount: Number(document.getElementById('form-billing-discount').value),
+        meter_reset: document.getElementById('form-billing-meter-reset').checked,
+        payment_status: 'PENDING'
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกใบแจ้งยอดค่าเช่าและมิเตอร์ลงชีตเรียบร้อยแล้ว', 'success');
+            closeModal('modal-billing');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveBilling(payload, appState.currentUser.email);
+      } else {
+        // Local simulation: BR-06 check
+        const dup = appState.billings.find(b => b.contract_id === payload.contract_id && b.billing_month === payload.billing_month);
+        if (dup) {
+          showToast(`สัญญาเช่านี้มีการออกใบแจ้งยอดเดือน ${payload.billing_month} ไปแล้ว (${dup.invoice_no})`, 'error');
+          return;
+        }
+
+        const wUnits = payload.meter_reset ? payload.water_curr : (payload.water_curr - payload.water_prev);
+        const eUnits = payload.meter_reset ? payload.elec_curr : (payload.elec_curr - payload.elec_prev);
+        const total = payload.rent_amount + (wUnits * payload.water_rate) + (eUnits * payload.elec_rate) + payload.other_fee - payload.discount;
+
+        const newBill = {
+          ...payload,
+          billing_id: 'BIL-' + Date.now().toString().slice(-4),
+          invoice_no: 'INV-' + month.replace('-', '') + '-' + Date.now().toString().slice(-3),
+          water_units: wUnits,
+          water_amount: wUnits * payload.water_rate,
+          elec_units: eUnits,
+          elec_amount: eUnits * payload.elec_rate,
+          total_amount: total
+        };
+
+        appState.billings.push(newBill);
+
+        // Update latest meters in spaces
+        const sp = appState.spaces.find(x => x.space_id === payload.space_id);
+        if (sp) {
+          sp.last_water_reading = payload.water_curr;
+          sp.last_elec_reading = payload.elec_curr;
+        }
+
+        showToast('บันทึกใบแจ้งยอดเรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-billing');
+        refreshAllUI();
+      }
+    }
+
+    // Payment Modal
+    function openPaymentModal(billingId) {
+      const b = appState.billings.find(x => x.billing_id === billingId);
+      if (!b) return;
+      const shop = appState.shops.find(s => s.shop_id === b.shop_id);
+
+      document.getElementById('form-payment-billing-id').value = b.billing_id;
+      document.getElementById('pay-modal-invoice-no').innerText = b.invoice_no;
+      document.getElementById('pay-modal-shop-name').innerText = shop ? shop.shop_name : '-';
+      document.getElementById('pay-modal-amount').innerText = Number(b.total_amount).toLocaleString() + ' บาท';
+      document.getElementById('form-payment-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('form-payment-receipt-no').value = 'RC-SKRU-' + Date.now().toString().slice(-6);
+
+      document.getElementById('modal-payment').classList.remove('hidden');
+    }
+
+    function handleSavePayment(e) {
+      e.preventDefault();
+      const payload = {
+        billing_id: document.getElementById('form-payment-billing-id').value,
+        paid_date: document.getElementById('form-payment-date').value,
+        receipt_no: document.getElementById('form-payment-receipt-no').value,
+        payment_status: 'PAID'
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกการรับชำระเงินเรียบร้อยแล้ว', 'success');
+            closeModal('modal-payment');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .recordPayment(payload, appState.currentUser.email);
+      } else {
+        const b = appState.billings.find(x => x.billing_id === payload.billing_id);
+        if (b) {
+          b.payment_status = 'PAID';
+          b.paid_date = payload.paid_date;
+          b.receipt_no = payload.receipt_no;
+        }
+        showToast('รับชำระเงินเรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-payment');
+        refreshAllUI();
+      }
+    }
+
+    // Print Invoice / Receipt
+    function openPrintInvoiceModal(billingId) {
+      const b = appState.billings.find(x => x.billing_id === billingId);
+      if (!b) return;
+
+      const shop = appState.shops.find(s => s.shop_id === b.shop_id) || {};
+      const space = appState.spaces.find(sp => sp.space_id === b.space_id) || {};
+      const contract = appState.contracts.find(c => c.contract_id === b.contract_id) || {};
+
+      const isPaid = b.payment_status === 'PAID';
+      document.getElementById('print-doc-type').innerText = isPaid ? 'ใบเสร็จรับเงิน / RECEIPT' : 'ใบแจ้งหนี้ / INVOICE';
+      document.getElementById('print-doc-no').innerText = isPaid ? (b.receipt_no || b.invoice_no) : b.invoice_no;
+      document.getElementById('print-doc-date').innerText = isPaid ? b.paid_date : (b.updated_at ? b.updated_at.split('T')[0] : new Date().toLocaleDateString('th-TH'));
+
+      document.getElementById('print-shop-name').innerText = shop.shop_name || '-';
+      document.getElementById('print-owner-name').innerText = `ผู้ประกอบการ: ${shop.owner_name || '-'}`;
+      document.getElementById('print-phone').innerText = `โทร: ${shop.phone || '-'}`;
+      document.getElementById('print-space-info').innerText = `ล็อก: ${space.space_code} (${space.space_name || '-'})`;
+      document.getElementById('print-contract-no').innerText = `สัญญาเลขที่: ${contract.contract_no || '-'}`;
+      document.getElementById('print-billing-month').innerText = `ประจำรอบเดือน: ${b.billing_month}`;
+
+      const items = [
+        { name: 'ค่าเช่าพื้นที่ประจำเดือน', meter: '-', units: '-', rate: '-', amount: b.rent_amount },
+        { name: 'ค่าน้ำประปา', meter: `${b.water_prev} - ${b.water_curr}`, units: b.water_units, rate: b.water_rate, amount: b.water_amount },
+        { name: 'ค่าไฟฟ้า', meter: `${b.elec_prev} - ${b.elec_curr}`, units: b.elec_units, rate: b.elec_rate, amount: b.elec_amount }
+      ];
+
+      if (Number(b.other_fee) > 0) items.push({ name: 'ค่าจัดการขยะและส่วนกลาง', meter: '-', units: '-', rate: '-', amount: b.other_fee });
+      if (Number(b.discount) > 0) items.push({ name: 'ส่วนลดพิเศษ', meter: '-', units: '-', rate: '-', amount: -b.discount });
+
+      const tbody = document.getElementById('print-table-items');
+      tbody.innerHTML = items.map((it, idx) => `
+        <tr>
+          <td class="p-2.5 text-center">${idx + 1}</td>
+          <td class="p-2.5 font-medium">${it.name}</td>
+          <td class="p-2.5 text-center font-mono text-[11px]">${it.meter}</td>
+          <td class="p-2.5 text-center font-mono">${it.units}</td>
+          <td class="p-2.5 text-right font-mono">${it.rate}</td>
+          <td class="p-2.5 text-right font-mono font-bold">${Number(it.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('print-grand-total').innerText = Number(b.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 }) + ' บาท';
+
+      const badge = document.getElementById('print-payment-badge');
+      if (isPaid) {
+        badge.innerText = 'ชำระเงินเรียบร้อยแล้ว (PAID)';
+        badge.className = 'px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-xs';
+      } else {
+        badge.innerText = 'รอชำระเงิน (PENDING)';
+        badge.className = 'px-3 py-1 bg-amber-100 text-amber-800 font-bold rounded-full text-xs';
+      }
+
+      document.getElementById('print-officer-name').innerText = appState.currentUser ? appState.currentUser.full_name : 'เจ้าหน้าที่ผู้มีอำนาจลงนาม';
+      document.getElementById('modal-invoice-print').classList.remove('hidden');
+    }
+
+    // Zone Modal & User Modal Handlers
+    function openModalAddZone() {
+      document.getElementById('modal-zone').classList.remove('hidden');
+    }
+
+    function handleSaveZone(e) {
+      e.preventDefault();
+      const payload = {
+        zone_code: document.getElementById('form-zone-code').value,
+        zone_name: document.getElementById('form-zone-name').value,
+        location_detail: document.getElementById('form-zone-location').value,
+        total_capacity: Number(document.getElementById('form-zone-capacity').value),
+        status: 'ACTIVE'
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกโซนพื้นที่เรียบร้อยแล้ว', 'success');
+            closeModal('modal-zone');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveZone(payload, appState.currentUser.email);
+      } else {
+        appState.zones.push({ ...payload, zone_id: 'ZN-' + Date.now().toString().slice(-4) });
+        showToast('บันทึกโซนพื้นที่เรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-zone');
+        refreshAllUI();
+      }
+    }
+
+    function openModalAddUser() {
+      document.getElementById('modal-user').classList.remove('hidden');
+    }
+
+    function handleSaveUser(e) {
+      e.preventDefault();
+      const payload = {
+        email: document.getElementById('form-user-email').value,
+        full_name: document.getElementById('form-user-name').value,
+        department: document.getElementById('form-user-dept').value,
+        role: document.getElementById('form-user-role').value,
+        status: document.getElementById('form-user-status').value
+      };
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('บันทึกสิทธิ์ผู้ใช้งาน Google Login เรียบร้อยแล้ว', 'success');
+            closeModal('modal-user');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveUserAllowlist(payload, appState.currentUser.email);
+      } else {
+        appState.users.push({ ...payload, user_id: 'USR-' + Date.now().toString().slice(-4), avatar_color: '#0f766e' });
+        showToast('บันทึกสิทธิ์ผู้ใช้งานเรียบร้อยแล้ว (Local Mode)', 'success');
+        closeModal('modal-user');
+        refreshAllUI();
+      }
+    }
+
+    function toggleUserStatus(userId) {
+      const u = appState.users.find(x => x.user_id === userId);
+      if (!u) return;
+      u.status = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+      if (isRunningOnGAS()) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${u.status} เรียบร้อยแล้ว`, 'info');
+            loadAppData();
+          })
+          .withFailureHandler(err => showToast(err.message, 'error'))
+          .saveUserAllowlist(u, appState.currentUser.email);
+      } else {
+        showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${u.status} เรียบร้อยแล้ว (Local Mode)`, 'info');
+        refreshAllUI();
+      }
+    }
+
+    // Toast Utility
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      msg.innerText = message;
+      toast.className = 'fixed bottom-5 right-5 z-50 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold text-white ';
+
+      if (type === 'success') {
+        toast.className += 'bg-emerald-600';
+        icon.className = 'fa-solid fa-circle-check text-base';
+      } else if (type === 'error') {
+        toast.className += 'bg-rose-600';
+        icon.className = 'fa-solid fa-circle-xmark text-base';
+      } else if (type === 'warning') {
+        toast.className += 'bg-amber-600';
+        icon.className = 'fa-solid fa-triangle-exclamation text-base';
+      } else {
+        toast.className += 'bg-slate-800';
+        icon.className = 'fa-solid fa-circle-info text-base';
+      }
+
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+
+      setTimeout(() => {
+        toast.style.transform = 'translateY(80px)';
+        toast.style.opacity = '0';
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

@@ -302,6 +302,27 @@
       </nav>
     </header>
 
+    <!-- Real-time Google Sheet & Drive Live Sync Bar -->
+    <div id="sync-status-bar" class="bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white text-xs px-4 py-2 border-b border-rose-900/40">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span id="sync-mode-indicator" class="flex h-2.5 w-2.5 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <span class="font-semibold text-slate-200">
+            <i class="fa-solid fa-table-cells mr-1 text-emerald-400"></i> Google Sheet & Drive:
+            <span id="sync-status-detail" class="text-emerald-300 font-mono">ตรวจสอบการเชื่อมต่อ...</span>
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openModalGasConfig()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded text-[11px] font-semibold text-rose-200 hover:text-white transition-colors flex items-center gap-1 border border-white/10">
+            <i class="fa-solid fa-link text-skru-gold"></i> เชื่อมต่อ Google Sheet & Drive ทันที
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
 
@@ -1313,6 +1334,63 @@
     </div>
   </div>
 
+  <!-- Modal: ตั้งค่าเชื่อมต่อ Google Apps Script Web App (Live Sync to Google Sheets & Drive) -->
+  <div id="modal-gas-config" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-slate-900 to-rose-950 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-skru-gold text-lg"></i>
+          <div>
+            <h3 class="font-heading font-bold text-sm">เชื่อมต่อ Google Sheet & Drive โดยตรง</h3>
+            <p class="text-[11px] text-rose-200">บันทึกข้อมูลและสร้างไฟล์สัญญาเช่าลง Google Drive อัตโนมัติทันที</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-gas-config')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1 font-mono text-[11px]">
+          <div>Google Sheet ID: <strong class="text-skru-red select-all">1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA</strong></div>
+          <div class="text-slate-500">สถานะปัจจุบัน: <span id="modal-gas-status-text" class="font-semibold text-slate-700">กำลังตรวจสอบ...</span></div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Google Apps Script Web App URL (URL สำหรับบันทึกสด):</label>
+          <input type="url" id="input-gas-url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full px-3 py-2 border rounded-lg font-mono text-xs focus:ring-2 focus:ring-skru-red outline-none">
+          <p class="text-[10px] text-slate-400 mt-1">คัดลอกได้จาก: Apps Script &gt; Deploy &gt; Manage deployments &gt; Web app URL</p>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900 text-[11px] space-y-1">
+          <div class="font-bold flex items-center gap-1"><i class="fa-solid fa-circle-info"></i> ขั้นตอนนำ Web App URL มาใส่ (ทำครั้งเดียว):</div>
+          <ol class="list-decimal pl-4 space-y-0.5 text-slate-600">
+            <li>เปิด Google Sheet <span class="font-mono text-slate-800">1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA</span></li>
+            <li>ไปที่ <strong>ส่วนขยาย (Extensions)</strong> &gt; <strong>Apps Script</strong></li>
+            <li>วางโค้ด <span class="font-mono text-slate-800">Code.gs</span> แล้วกด <strong>Deploy &gt; New deployment &gt; Web app</strong></li>
+            <li>เลือก <em>Execute as: Me</em> และ <em>Who has access: Anyone</em></li>
+            <li>กด Deploy แล้วคัดลอก Web app URL มาวางที่ช่องด้านบน</li>
+          </ol>
+        </div>
+
+        <div class="pt-3 border-t flex flex-wrap justify-between items-center gap-2">
+          <div class="flex gap-2">
+            <button type="button" onclick="testGasConnection()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-bolt text-amber-600"></i> ทดสอบการเชื่อมต่อ
+            </button>
+            <button type="button" onclick="initDatabaseFromUI()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-database text-emerald-600"></i> สร้างตารางข้อมูลใน Google Sheet
+            </button>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModal('modal-gas-config')" class="px-3 py-2 border rounded-lg">ปิด</button>
+            <button type="button" onclick="saveGasConfigFromModal()" class="px-4 py-2 bg-skru-red hover:bg-rose-800 text-white rounded-lg font-semibold shadow">
+              บันทึกการเชื่อมต่อ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: จัดการโซนพื้นที่ (Zone Modal) -->
   <div id="modal-zone" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
@@ -1473,6 +1551,139 @@
       return typeof google !== 'undefined' && google.script && google.script.run;
     }
 
+    // =========================================================================
+    // Google Apps Script & Google Drive Live Sync Configuration & Bridge
+    // =========================================================================
+    function getGasWebAppUrl() {
+      return (localStorage.getItem('skru_gas_url') || '').trim();
+    }
+
+    function setGasWebAppUrl(url) {
+      if (url) {
+        localStorage.setItem('skru_gas_url', url.trim());
+      } else {
+        localStorage.removeItem('skru_gas_url');
+      }
+      updateSyncStatusUI();
+    }
+
+    function isLiveSyncConfigured() {
+      return isRunningOnGAS() || getGasWebAppUrl().length > 0;
+    }
+
+    function updateSyncStatusUI() {
+      const modeIndicator = document.getElementById('sync-mode-indicator');
+      const statusDetail = document.getElementById('sync-status-detail');
+      const modalStatus = document.getElementById('modal-gas-status-text');
+
+      if (isRunningOnGAS()) {
+        if (modeIndicator) modeIndicator.innerHTML = '<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>';
+        if (statusDetail) statusDetail.innerHTML = '<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-cloud-check mr-1"></i> ทำงานบน Google Apps Script (บันทึกลง Google Sheet & Drive ทันที)</span>';
+        if (modalStatus) modalStatus.innerHTML = '<span class="text-emerald-600 font-bold">ทำงานบน Google Apps Script Runtime (บันทึกอัตโนมัติ)</span>';
+      } else if (getGasWebAppUrl()) {
+        if (modeIndicator) modeIndicator.innerHTML = '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>';
+        if (statusDetail) statusDetail.innerHTML = '<span class="text-emerald-300 font-semibold"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> เชื่อมต่อสดกับ Google Sheet & Drive (' + getGasWebAppUrl().slice(0, 32) + '...)</span>';
+        if (modalStatus) modalStatus.innerHTML = '<span class="text-emerald-600 font-bold">เชื่อมต่อ Web App เรียบร้อย (บันทึกสดลง Google Sheet & Drive)</span>';
+      } else {
+        if (modeIndicator) modeIndicator.innerHTML = '<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>';
+        if (statusDetail) statusDetail.innerHTML = '<span class="text-amber-300"><i class="fa-solid fa-laptop mr-1"></i> โหมดพรีวิวในเครื่อง (คลิกปุ่มขวาเพื่อเชื่อมต่อบันทึกลงชีตจริง)</span>';
+        if (modalStatus) modalStatus.innerHTML = '<span class="text-amber-600 font-semibold">ยังไม่ได้ระบุ Web App URL (ใช้งานโหมด Standalone Browser)</span>';
+      }
+    }
+
+    function openModalGasConfig() {
+      const input = document.getElementById('input-gas-url');
+      if (input) input.value = getGasWebAppUrl();
+      updateSyncStatusUI();
+      document.getElementById('modal-gas-config').classList.remove('hidden');
+    }
+
+    function saveGasConfigFromModal() {
+      const url = document.getElementById('input-gas-url').value.trim();
+      setGasWebAppUrl(url);
+      closeModal('modal-gas-config');
+      showToast('บันทึกการตั้งค่าเชื่อมต่อเรียบร้อยแล้ว!', 'success');
+      if (url) {
+        refreshDataFromBackend();
+      }
+    }
+
+    // ฟังก์ชันบริดจ์หลัก (Backend Dispatcher) รองรับทั้ง google.script.run และ POST fetch
+    async function callBackendApi(action, payload = {}) {
+      const userEmail = appState.currentUser ? appState.currentUser.email : '';
+      
+      if (isRunningOnGAS()) {
+        return new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(res => resolve(res))
+            .withFailureHandler(err => reject(err))
+            .executeApi(action, payload, userEmail);
+        });
+      }
+
+      const webAppUrl = getGasWebAppUrl();
+      if (webAppUrl) {
+        const response = await fetch(webAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, payload: payload, userEmail: userEmail })
+        });
+        if (!response.ok) {
+          throw new Error('HTTP Error: ' + response.status + ' ' + response.statusText);
+        }
+        const res = await response.json();
+        if (!res.ok) {
+          throw new Error(res.error || 'เกิดข้อผิดพลาดในการประมวลผลคำสั่ง API');
+        }
+        return res.data;
+      }
+
+      return null;
+    }
+
+    async function testGasConnection() {
+      const url = document.getElementById('input-gas-url')?.value.trim() || getGasWebAppUrl();
+      if (!url && !isRunningOnGAS()) {
+        showToast('กรุณาระบุ Web App URL ก่อนทดสอบ', 'warning');
+        return;
+      }
+
+      showToast('กำลังทดสอบเชื่อมต่อ Google Apps Script Web App...', 'info');
+      try {
+        if (url && !isRunningOnGAS()) {
+          setGasWebAppUrl(url);
+        }
+        const data = await callBackendApi('getInitialAppData', {});
+        showToast('เชื่อมต่อสำเร็จ! ดึงข้อมูลจาก Google Sheet สำเร็จแล้ว', 'success');
+        updateSyncStatusUI();
+        if (data) {
+          appState.settings = data.settings || appState.settings;
+          appState.zones = data.zones || [];
+          appState.spaces = data.spaces || [];
+          appState.shops = data.shops || [];
+          appState.contracts = data.contracts || [];
+          appState.billings = data.billings || [];
+          appState.users = data.users || [];
+          appState.auditLogs = data.auditLogs || [];
+          refreshAllUI();
+        }
+      } catch (err) {
+        showToast('เชื่อมต่อไม่สำเร็จ: ' + err.message, 'error');
+      }
+    }
+
+    async function initDatabaseFromUI() {
+      if (!confirm('ยืนยันสร้างโครงสร้างชีต 8 ตารางและข้อมูลตั้งต้นใน Google Sheet 1FcbBW1QQb0Eo03snwIwE2UKb1gzpqtu1ljPgRQalCrA หรือไม่?')) return;
+      showToast('กำลังสร้างโครงสร้างตารางฐานข้อมูลใน Google Sheet...', 'info');
+      try {
+        await callBackendApi('initDatabase', {});
+        showToast('สร้างโครงสร้างตารางฐานข้อมูลใน Google Sheet สำเร็จเรียบร้อย!', 'success');
+        await loadAppData();
+      } catch (err) {
+        showToast('ไม่สามารถสร้างตารางได้: ' + err.message, 'error');
+      }
+    }
+
     // Initialize Application Lifecycle
     window.addEventListener('DOMContentLoaded', () => {
       // เซตรอบเดือนปัจจุบันใน Input
@@ -1480,6 +1691,8 @@
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const monthInput = document.getElementById('selected-billing-month');
       if (monthInput) monthInput.value = currentMonth;
+
+      updateSyncStatusUI();
 
       // ตรวจสอบสถานะการล็อกอินใน SessionStorage
       const savedUser = sessionStorage.getItem('skru_user');
@@ -1506,6 +1719,7 @@
       document.getElementById('login-container').classList.add('hidden');
       document.getElementById('app-container').classList.remove('hidden');
       updateHeaderUserProfile();
+      updateSyncStatusUI();
     }
 
     function openGoogleLoginModal() {
@@ -1530,20 +1744,19 @@
       processLoginWithEmail(email);
     }
 
-    function processLoginWithEmail(email) {
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler((user) => {
-            appState.currentUser = user;
-            sessionStorage.setItem('skru_user', JSON.stringify(user));
-            closeGoogleLoginModal();
-            showToast(`ยินดีต้อนรับ ${user.full_name}`, 'success');
-            loadAppData();
-          })
-          .withFailureHandler((err) => {
-            showToast(err.message || 'ไม่ได้รับอนุญาตเข้าใช้งานระบบ (Allowlist Check Failed)', 'error');
-          })
-          .loginWithGoogleMockup(email);
+    async function processLoginWithEmail(email) {
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังตรวจสอบสิทธิ์ผ่านระบบ Google Sheet...', 'info');
+        try {
+          const user = await callBackendApi('loginWithGoogleMockup', { email: email });
+          appState.currentUser = user;
+          sessionStorage.setItem('skru_user', JSON.stringify(user));
+          closeGoogleLoginModal();
+          showToast(`ยินดีต้อนรับ ${user.full_name}`, 'success');
+          await loadAppData();
+        } catch (err) {
+          showToast(err.message || 'ไม่ได้รับอนุญาตเข้าใช้งานระบบ (Allowlist Check Failed)', 'error');
+        }
       } else {
         // Standalone Browser Simulation (ตรวจสอบกับ User Allowlist ใน Seed Data)
         const matched = SEED_DATA.users.find(u => u.email.toLowerCase() === email.toLowerCase());
@@ -1588,11 +1801,13 @@
     }
 
     // โหลดข้อมูลแอปพลิเคชันทั้งหมด
-    function loadAppData() {
+    async function loadAppData() {
       showAppScreen();
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler((data) => {
+      updateSyncStatusUI();
+      if (isLiveSyncConfigured()) {
+        try {
+          const data = await callBackendApi('getInitialAppData', {});
+          if (data) {
             appState.settings = data.settings || appState.settings;
             appState.zones = data.zones || [];
             appState.spaces = data.spaces || [];
@@ -1601,18 +1816,17 @@
             appState.billings = data.billings || [];
             appState.users = data.users || [];
             appState.auditLogs = data.auditLogs || [];
-            document.getElementById('sync-timestamp').innerText = new Date().toLocaleTimeString('th-TH');
+            document.getElementById('sync-timestamp').innerText = new Date().toLocaleTimeString('th-TH') + ' (Google Sheet Live)';
             refreshAllUI();
-          })
-          .withFailureHandler((err) => {
-            showToast('เกิดข้อผิดพลาดในการโหลดข้อมูลจากชีต: ' + err.message, 'error');
-            // Fallback to local seed
-            fallbackToSeedData();
-          })
-          .getInitialAppData(appState.currentUser.email);
-      } else {
-        fallbackToSeedData();
+            return;
+          }
+        } catch (err) {
+          showToast('โหลดข้อมูลจากชีตไม่สำเร็จ: ' + err.message + ' (ใช้ข้อมูลสำรองในเครื่อง)', 'warning');
+          fallbackToSeedData();
+          return;
+        }
       }
+      fallbackToSeedData();
     }
 
     function fallbackToSeedData() {
@@ -1627,9 +1841,9 @@
       refreshAllUI();
     }
 
-    function refreshDataFromBackend() {
+    async function refreshDataFromBackend() {
       showToast('กำลังซิงค์ข้อมูลกับ Google Sheets...', 'info');
-      loadAppData();
+      await loadAppData();
     }
 
     function refreshAllUI() {
@@ -2156,7 +2370,7 @@
       }).join('');
     }
 
-    function saveSystemSettingsFromUI() {
+    async function saveSystemSettingsFromUI() {
       if (appState.currentUser?.role !== 'ADMIN') {
         showToast('คำสั่งนี้จำกัดเฉพาะผู้ดูแลระบบระดับ ADMIN เท่านั้น', 'warning');
         return;
@@ -2168,14 +2382,15 @@
         EXPIRY_WARNING_DAYS: document.getElementById('setting-warning-days').value
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกการตั้งค่าลง Google Sheets เรียบร้อยแล้ว', 'success');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveSystemSettings(newSettings, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกการตั้งค่าลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveSystemSettings', newSettings);
+          showToast('บันทึกการตั้งค่าลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกการตั้งค่าไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         appState.settings = { ...appState.settings, ...newSettings };
         showToast('บันทึกการตั้งค่าเรียบร้อยแล้ว (Local Mode)', 'success');
@@ -2250,7 +2465,7 @@
       document.getElementById('modal-space').classList.remove('hidden');
     }
 
-    function handleSaveSpace(e) {
+    async function handleSaveSpace(e) {
       e.preventDefault();
       const payload = {
         space_id: document.getElementById('form-space-id').value,
@@ -2266,15 +2481,16 @@
         status: document.getElementById('form-space-status').value
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกล็อกพื้นที่ลงชีตเรียบร้อยแล้ว', 'success');
-            closeModal('modal-space');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveSpace(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกล็อกพื้นที่ลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveSpace', payload);
+          showToast('บันทึกล็อกพื้นที่ลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-space');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         const idx = appState.spaces.findIndex(x => x.space_id === payload.space_id);
         if (idx >= 0) appState.spaces[idx] = payload;
@@ -2313,7 +2529,7 @@
       document.getElementById('modal-shop').classList.remove('hidden');
     }
 
-    function handleSaveShop(e) {
+    async function handleSaveShop(e) {
       e.preventDefault();
       const payload = {
         shop_id: document.getElementById('form-shop-id').value,
@@ -2326,15 +2542,16 @@
         status: document.getElementById('form-shop-status').value
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกร้านค้าลงชีตเรียบร้อยแล้ว', 'success');
-            closeModal('modal-shop');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveShop(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกข้อมูลร้านค้าลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveShop', payload);
+          showToast('บันทึกข้อมูลร้านค้าลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-shop');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกร้านค้าไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         const idx = appState.shops.findIndex(x => x.shop_id === payload.shop_id);
         if (idx >= 0) appState.shops[idx] = payload;
@@ -2395,8 +2612,9 @@
       }
     }
 
-    function handleSaveContract(e) {
+    async function handleSaveContract(e) {
       e.preventDefault();
+      const autoDoc = document.getElementById('form-contract-auto-doc')?.checked;
       const payload = {
         contract_id: document.getElementById('form-contract-id').value,
         renew_from_contract_id: document.getElementById('form-contract-renew-from').value,
@@ -2410,15 +2628,23 @@
         status: 'ACTIVE'
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกสัญญาเช่าลงชีตเรียบร้อยแล้ว', 'success');
-            closeModal('modal-contract');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveContract(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกสัญญาลง Google Sheet และ Google Drive...', 'info');
+        try {
+          const savedContract = await callBackendApi('saveContract', payload);
+          if (autoDoc && savedContract && savedContract.contract_id) {
+            try {
+              await callBackendApi('generateContractDocument', { contract_id: savedContract.contract_id });
+            } catch (docErr) {
+              console.warn('Doc generation error:', docErr);
+            }
+          }
+          showToast('บันทึกสัญญาเช่าลง Google Sheet และ Google Drive เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-contract');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกสัญญาไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         // Local simulation: BR-02 check
         const conflict = appState.contracts.find(c => c.space_id === payload.space_id && c.status === 'ACTIVE' && c.contract_id !== payload.renew_from_contract_id);
@@ -2433,7 +2659,6 @@
         }
 
         const generatedContractNo = 'SKRU-69/' + Date.now().toString().slice(-3);
-        const autoDoc = document.getElementById('form-contract-auto-doc')?.checked;
         const newC = {
           ...payload,
           contract_id: 'CNT-' + Date.now().toString().slice(-4),
@@ -2452,17 +2677,18 @@
       }
     }
 
-    function terminateContract(contractId) {
+    async function terminateContract(contractId) {
       if (!confirm('ยืนยันการปิด/ยกเลิกสัญญาเช่านี้หรือไม่? สถานะล็อกพื้นที่จะกลับเป็น "ว่างพร้อมเช่า" ทันที (BR-04)')) return;
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('ปิดสัญญาเช่าและคืนสถานะล็อกเรียบร้อยแล้ว', 'success');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .updateContractStatus(contractId, 'CLOSED', 'ปิดสัญญาตามคำร้องขอ', appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังปิดสัญญาและอัปเดต Google Sheet...', 'info');
+        try {
+          await callBackendApi('updateContractStatus', { contract_id: contractId, status: 'CLOSED', note: 'ปิดสัญญาตามคำร้องขอ' });
+          showToast('ปิดสัญญาเช่าและคืนสถานะล็อกใน Google Sheet เรียบร้อยแล้ว!', 'success');
+          await loadAppData();
+        } catch (err) {
+          showToast('ปิดสัญญาไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         const c = appState.contracts.find(x => x.contract_id === contractId);
         if (c) {
@@ -2516,27 +2742,25 @@
       document.getElementById('modal-contract-view').classList.remove('hidden');
     }
 
-    function autoGenerateContractDoc(contractId) {
+    async function autoGenerateContractDoc(contractId) {
       const c = appState.contracts.find(x => x.contract_id === contractId);
       if (!c) return;
 
-      showToast(`กำลังสร้างเอกสารสัญญา ${c.contract_no} อัตโนมัติ...`, 'info');
+      showToast(`กำลังสร้างเอกสารสัญญา ${c.contract_no} ลง Google Drive...`, 'info');
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            showToast('สร้างไฟล์สัญญาเช่าลง Google Drive และอัปเดตชีตเรียบร้อยแล้ว!', 'success');
-            c.contract_file_url = res.file_url;
-            viewOfficialContractDoc(contractId);
-            loadAppData();
-          })
-          .withFailureHandler((err) => {
-            showToast(err.message || 'สร้างเอกสารในระบบสำเร็จ', 'info');
-            c.contract_file_url = 'https://drive.google.com/file/d/skru-contract-' + c.contract_no.replace(/[\/\\]/g, '-') + '/view';
-            viewOfficialContractDoc(contractId);
-            renderContractsList();
-          })
-          .generateContractDocument(contractId, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        try {
+          const res = await callBackendApi('generateContractDocument', { contract_id: contractId });
+          showToast('สร้างไฟล์สัญญาเช่าลง Google Drive และอัปเดต Google Sheet เรียบร้อยแล้ว!', 'success');
+          if (res && res.file_url) c.contract_file_url = res.file_url;
+          viewOfficialContractDoc(contractId);
+          await loadAppData();
+        } catch (err) {
+          showToast('สร้างเอกสารในระบบ: ' + err.message, 'info');
+          c.contract_file_url = 'https://drive.google.com/file/d/skru-contract-' + c.contract_no.replace(/[\/\\]/g, '-') + '/view';
+          viewOfficialContractDoc(contractId);
+          renderContractsList();
+        }
       } else {
         c.contract_file_url = 'https://drive.google.com/file/d/skru-contract-' + c.contract_no.replace(/[\/\\]/g, '-') + '/view';
         showToast('สร้างไฟล์สัญญาเช่าทางการอัตโนมัติเรียบร้อยแล้ว!', 'success');
@@ -2550,15 +2774,16 @@
       autoGenerateContractDoc(currentViewingContractId);
     }
 
-    function triggerExpiryAlerts() {
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            showToast(`ตรวจสอบพบ ${res.alertCount} รายการ (ส่งอีเมล: ${res.mailSent ? 'สำเร็จ' : 'บันทึกในระบบ'})`, 'info');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .sendContractExpiryAlerts(appState.currentUser.email);
+    async function triggerExpiryAlerts() {
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังตรวจสอบสัญญาใน Google Sheet และส่งแจ้งเตือน...', 'info');
+        try {
+          const res = await callBackendApi('sendContractExpiryAlerts', {});
+          showToast(`ตรวจสอบพบ ${res.alertCount} รายการ (ส่งอีเมล: ${res.mailSent ? 'สำเร็จ' : 'บันทึกใน Google Sheet เรียบร้อย'})`, 'info');
+          await loadAppData();
+        } catch (err) {
+          showToast('การแจ้งเตือนผิดพลาด: ' + err.message, 'error');
+        }
       } else {
         showToast('จำลองการตรวจสอบสัญญาใกล้หมดอายุและแจ้งเตือนสำเร็จ (Local Mode)', 'success');
       }
@@ -2617,7 +2842,7 @@
       document.getElementById('form-billing-total-display').innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2 });
     }
 
-    function handleSaveBilling(e) {
+    async function handleSaveBilling(e) {
       e.preventDefault();
       const contractId = document.getElementById('form-billing-contract').value;
       const contract = appState.contracts.find(c => c.contract_id === contractId);
@@ -2642,15 +2867,16 @@
         payment_status: 'PENDING'
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกใบแจ้งยอดค่าเช่าและมิเตอร์ลงชีตเรียบร้อยแล้ว', 'success');
-            closeModal('modal-billing');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveBilling(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกใบแจ้งหนี้และเลขมิเตอร์ลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveBilling', payload);
+          showToast('บันทึกใบแจ้งยอดค่าเช่าและมิเตอร์ลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-billing');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกใบแจ้งยอดไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         // Local simulation: BR-06 check
         const dup = appState.billings.find(b => b.contract_id === payload.contract_id && b.billing_month === payload.billing_month);
@@ -2705,7 +2931,7 @@
       document.getElementById('modal-payment').classList.remove('hidden');
     }
 
-    function handleSavePayment(e) {
+    async function handleSavePayment(e) {
       e.preventDefault();
       const payload = {
         billing_id: document.getElementById('form-payment-billing-id').value,
@@ -2714,15 +2940,16 @@
         payment_status: 'PAID'
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกการรับชำระเงินเรียบร้อยแล้ว', 'success');
-            closeModal('modal-payment');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .recordPayment(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกการรับชำระเงินลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('recordPayment', payload);
+          showToast('บันทึกการรับชำระเงินลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-payment');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกชำระเงินไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         const b = appState.billings.find(x => x.billing_id === payload.billing_id);
         if (b) {
@@ -2798,7 +3025,7 @@
       document.getElementById('modal-zone').classList.remove('hidden');
     }
 
-    function handleSaveZone(e) {
+    async function handleSaveZone(e) {
       e.preventDefault();
       const payload = {
         zone_code: document.getElementById('form-zone-code').value,
@@ -2808,15 +3035,16 @@
         status: 'ACTIVE'
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกโซนพื้นที่เรียบร้อยแล้ว', 'success');
-            closeModal('modal-zone');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveZone(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกโซนพื้นที่ลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveZone', payload);
+          showToast('บันทึกโซนพื้นที่ลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-zone');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกโซนไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         appState.zones.push({ ...payload, zone_id: 'ZN-' + Date.now().toString().slice(-4) });
         showToast('บันทึกโซนพื้นที่เรียบร้อยแล้ว (Local Mode)', 'success');
@@ -2829,7 +3057,7 @@
       document.getElementById('modal-user').classList.remove('hidden');
     }
 
-    function handleSaveUser(e) {
+    async function handleSaveUser(e) {
       e.preventDefault();
       const payload = {
         email: document.getElementById('form-user-email').value,
@@ -2839,15 +3067,16 @@
         status: document.getElementById('form-user-status').value
       };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast('บันทึกสิทธิ์ผู้ใช้งาน Google Login เรียบร้อยแล้ว', 'success');
-            closeModal('modal-user');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveUserAllowlist(payload, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังบันทึกสิทธิ์ผู้ใช้งานลง Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveUserAllowlist', payload);
+          showToast('บันทึกสิทธิ์ผู้ใช้งานลง Google Sheet เรียบร้อยแล้ว!', 'success');
+          closeModal('modal-user');
+          await loadAppData();
+        } catch (err) {
+          showToast('บันทึกสิทธิ์ไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
         appState.users.push({ ...payload, user_id: 'USR-' + Date.now().toString().slice(-4), avatar_color: '#0f766e' });
         showToast('บันทึกสิทธิ์ผู้ใช้งานเรียบร้อยแล้ว (Local Mode)', 'success');
@@ -2856,21 +3085,24 @@
       }
     }
 
-    function toggleUserStatus(userId) {
+    async function toggleUserStatus(userId) {
       const u = appState.users.find(x => x.user_id === userId);
       if (!u) return;
-      u.status = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      const newStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      const updatedUser = { ...u, status: newStatus };
 
-      if (isRunningOnGAS()) {
-        google.script.run
-          .withSuccessHandler(() => {
-            showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${u.status} เรียบร้อยแล้ว`, 'info');
-            loadAppData();
-          })
-          .withFailureHandler(err => showToast(err.message, 'error'))
-          .saveUserAllowlist(u, appState.currentUser.email);
+      if (isLiveSyncConfigured()) {
+        showToast('กำลังอัปเดตสิทธิ์ผู้ใช้งานใน Google Sheet...', 'info');
+        try {
+          await callBackendApi('saveUserAllowlist', updatedUser);
+          showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${newStatus} ใน Google Sheet เรียบร้อยแล้ว!`, 'info');
+          await loadAppData();
+        } catch (err) {
+          showToast('เปลี่ยนสถานะไม่สำเร็จ: ' + err.message, 'error');
+        }
       } else {
-        showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${u.status} เรียบร้อยแล้ว (Local Mode)`, 'info');
+        u.status = newStatus;
+        showToast(`เปลี่ยนสถานะสิทธิ์เป็น ${newStatus} เรียบร้อยแล้ว (Local Mode)`, 'info');
         refreshAllUI();
       }
     }

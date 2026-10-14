@@ -67,6 +67,13 @@ function doPost(e) {
 }
 
 /**
+ * ฟังก์ชันหลักสำหรับเรียกผ่าน google.script.run
+ */
+function executeApi(action, payload, userEmail) {
+  return handleApiRequest(action, payload || {}, userEmail || '');
+}
+
+/**
  * ตัวกระจายคำสั่ง API (Dispatcher) สำหรับทั้ง google.script.run และ HTTP Fetch
  */
 function handleApiRequest(action, payload, userEmail) {
